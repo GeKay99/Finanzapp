@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkWorth - Der Lebenszeit Rechner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2563eb;       
+            --primary-dark: #1e40af;  
+            --primary-light: #dbeafe;
+            --secondary: #4f46e5;     
+            --bg-gradient: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            --card-bg: #ffffff;
+            --text-main: #0f172a;     
+            --text-light: #64748b;    
+            --line-color: #e2e8f0;
+            --danger: #ef4444; 
+            --success: #22c55e;
+            --sidebar-bg: #f1f5f9;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+        }
+
+        /* --- HEADER --- */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .logo-icon { font-size: 1.2rem; background: rgba(255,255,255,0.2); padding: 6px; border-radius: 8px; }
+        nav { display: flex; gap: 15px; }
+        .nav-btn { background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: all 0.2s; text-decoration: none;}
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: white; }
+        .nav-btn.active { background: white; color: var(--primary); font-weight: 700; border-color: white; }
+
+        /* --- TOOLTIPS (NEU) --- */
+        .info-wrapper {
+            display: inline-block;
+            position: relative;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .info-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 22px;
+            height: 22px;
+            background-color: #e2e8f0;
+            color: #64748b;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: help;
+            transition: all 0.2s;
+        }
+
+        .info-icon:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .tooltip-box {
+            visibility: hidden;
+            width: 250px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: absolute;
+            z-index: 100;
+            top: 135%; /* Unter dem Icon */
+            left: 50%;
+            margin-left: -125px; /* Zentrieren */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: 400;
+            line-height: 1.4;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            pointer-events: none; /* Klickt durch */
+        }
+
+        /* Kleiner Pfeil nach oben */
+        .tooltip-box::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #1e293b transparent;
+        }
+
+        .info-wrapper:hover .tooltip-box {
+            visibility: visible;
+            opacity: 1;
+        }
+
+
+        /* --- ADSENSE PLACEHOLDERS --- */
+        .ad-container {
+            background: #e5e7eb; border: 1px dashed #9ca3af; display: flex; justify-content: center; align-items: center; color: #6b7280; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative;
+        }
+        .ad-container::after { content: "Anzeige / AdSpace"; }
+        .ad-banner { width: 100%; max-width: 900px; height: 100px; margin: 20px auto; border-radius: 8px; }
+        .ad-sidebar { width: 100%; height: 250px; border-radius: 12px; margin-top: 25px; }
+
+        /* --- LAYOUT --- */
+        .main-container { flex: 1; display: flex; justify-content: center; align-items: start; padding: 0 20px 40px 20px; overflow: hidden; }
+        .page-grid { display: grid; grid-template-columns: 1fr; gap: 25px; width: 100%; max-width: 550px; }
+        @media (min-width: 1000px) { .page-grid { grid-template-columns: 1.3fr 0.8fr; max-width: 1250px; height: 85vh; min-height: 850px; } }
+
+        .main-wrapper { background: var(--card-bg); border-radius: 24px; box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1); overflow-y: auto; position: relative; padding-bottom: 20px; height: 100%; border: 1px solid var(--line-color); }
+        .sidebar-wrapper { height: 100%; display: flex; flex-direction: column; }
+        .benchmark-card, .chart-card { background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05); border: 1px solid var(--line-color); max-height: 600px; display: flex; flex-direction: column; overflow: hidden; }
+        .chart-card { display: none; padding: 25px; height: auto; }
+
+        /* --- UI COMPONENTS --- */
+        .tabs { display: flex; background: #f1f5f9; padding: 5px; margin: 25px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; border: none; background: transparent; cursor: pointer; border-radius: 8px; font-weight: 600; color: var(--text-light); transition: all 0.2s; }
+        .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .content-section { padding: 0 30px 10px 30px; display: none; animation: fadeIn 0.4s ease; }
+        .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { margin-top: 0; font-size: 1.5rem; color: var(--text-main); display: flex; align-items: center; }
+        p.desc { color: var(--text-light); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+        
+        .input-group { margin-bottom: 18px; position: relative; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        input, select { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; font-family: inherit; transition: border-color 0.2s; background: #f8fafc; }
+        input:focus { outline: none; border-color: var(--primary); background: #fff; }
+        .input-row { display: flex; gap: 15px; } .input-row > div { flex: 1; }
+
+        /* --- CART STYLES --- */
+        .search-container { position: relative; margin-bottom: 15px; display: flex; gap: 10px;}
+        .search-input-wrapper { position: relative; flex: 1; }
+        .search-input { width: 100%; padding-left: 40px !important; border-color: var(--primary-light) !important; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-light); pointer-events: none; }
+        
+        .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--line-color); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; z-index: 50; display: none; margin-top: 5px; }
+        .suggestion-item { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .suggestion-item:hover { background-color: #f8fafc; color: var(--primary); }
+
+        .btn-add-manual { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--line-color); border-radius: 10px; padding: 0 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.9rem; }
+        .btn-add-manual:hover { background: #e2e8f0; border-color: #cbd5e1; }
+
+        .cart-container { background: #f8fafc; border: 1px dashed var(--line-color); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .cart-header { display: grid; grid-template-columns: 2fr 1fr 1fr 30px; gap: 10px; margin-bottom: 10px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-light); padding: 0 5px; }
+        
+        .cart-row { display: grid; grid-template-columns: 2fr 1fr 1fr 30px; gap: 10px; margin-bottom: 10px; align-items: center; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); border: 1px solid transparent; animation: slideIn 0.3s ease; }
+        .cart-row:hover { border-color: var(--primary-light); }
+
+        .cart-input { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; }
+        .cart-input:focus { border-color: var(--primary); background: #fff; outline: none; }
+        .cart-input-name { font-weight: 500; }
+        
+        .input-with-label { position: relative; }
+        .input-label-tiny { position: absolute; top: -6px; left: 6px; background: white; padding: 0 4px; font-size: 0.65rem; color: var(--text-light); font-weight: 600; border-radius: 3px; }
+
+        .btn-remove { background: #fee2e2; color: var(--danger); border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; line-height: 0; transition: background 0.2s; }
+        .btn-remove:hover { background: var(--danger); color: white; }
+
+        .cart-summary { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 10px; border: 1px solid var(--line-color); margin-top: 15px; }
+        .summary-label { font-size: 0.9rem; color: var(--text-light); }
+        .summary-val { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+
+        /* --- REST OF STYLES --- */
+        .btn-calc { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 20px; transition: transform 0.1s; }
+        .btn-calc:active { transform: scale(0.98); }
+        #fixcost-feedback { margin-top: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; display: none; }
+        .feedback-good { background-color: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
+        .feedback-bad { background-color: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+        .result-container { display: none; margin-top: 30px; border-top: 2px dashed var(--line-color); padding-top: 20px; }
+        .wage-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+        .wage-table td { padding: 10px 0; font-size: 0.95rem; border-bottom: 1px solid var(--line-color); }
+        .wage-table tr:last-child td { border-bottom: none; }
+        .wage-label { color: var(--text-light); }
+        .wage-val { text-align: right; font-weight: 600; }
+        .signal-red { color: var(--danger); font-weight: 800; font-size: 1.1rem; }
+        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .hero-box { background: var(--primary-light); border: 1px solid #c7d2fe; border-radius: 16px; padding: 20px 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .hero-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6366f1; font-weight: 700; margin-bottom: 5px; }
+        .hero-val { font-size: 2.2rem; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .detail-footer { background: #f8fafc; border-radius: 12px; border: 1px solid var(--line-color); overflow: hidden; }
+        .detail-item { padding: 12px 15px; border-bottom: 1px solid var(--line-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--text-light); }
+        .detail-item:last-child { border-bottom: none; }
+        .val-highlight { font-weight: 700; color: var(--text-main); }
+        
+        /* Ticker & Footer */
+        .benchmark-header { padding: 25px 25px 15px 25px; border-bottom: 1px solid var(--line-color); background: #fff; z-index: 10; }
+        .benchmark-title { font-weight: 800; font-size: 1.2rem; color: var(--text-main); margin: 0; }
+        .benchmark-sub { font-size: 0.85rem; color: var(--text-light); margin-top: 5px; line-height: 1.4; }
+        .scroll-container { flex: 1; position: relative; overflow: hidden; background: var(--sidebar-bg); }
+        .scroll-track { padding: 20px 20px; display: flex; flex-direction: column; gap: 12px; animation: scrollUp 40s linear infinite; }
+        .scroll-container:hover .scroll-track { animation-play-state: paused; }
+        @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+        .benchmark-item { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: #fff; border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid #e2e8f0; flex-shrink: 0; }
+        .benchmark-item:hover { border-color: var(--primary); box-shadow: 0 8px 15px -3px rgba(0,0,0,0.1); transform: scale(1.02); z-index: 2; }
+        .b-icon { font-size: 1.6rem; margin-right: 15px; width: 30px; text-align: center;}
+        .b-info { flex: 1; }
+        .b-name { font-weight: 600; font-size: 0.95rem; display: block; color: var(--text-main); }
+        .b-price { font-size: 0.85rem; color: var(--text-light); }
+        .b-time { text-align: right; font-weight: 700; color: var(--primary); font-size: 0.9rem; background: var(--primary-light); padding: 5px 10px; border-radius: 8px; white-space: nowrap;}
+        
+        footer { background-color: #1e293b; color: #cbd5e1; padding: 30px 20px; margin-top: auto; border-top: 1px solid #334155; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+        .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .footer-links a { color: #fff; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .copyright { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; }
+
+        @media (max-width: 600px) {
+            header { padding: 1rem; flex-direction: column; gap: 10px; }
+            nav { width: 100%; justify-content: center; }
+            .scroll-container { height: 400px; }
+            .cart-header, .cart-row { grid-template-columns: 1fr; gap: 5px; }
+            .cart-row > * { width: 100%; }
+            .btn-remove { width: 100%; margin-top: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span class="logo-icon">⏳</span>
+            WorkWorth
+        </div>
+        <nav>
+            <a href="#" class="nav-btn active" onclick="location.reload()">Rechner</a>
+            <a href="#" class="nav-btn">Vergleich</a> 
+            <a href="#" class="nav-btn">Tipps</a>
+        </nav>
+    </header>
+
+    <div class="ad-container ad-banner"></div>
+
+    <div class="main-container">
+        <div class="page-grid">
+            
+            <div class="main-wrapper">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('worker')">💼 Arbeitnehmer</button>
+                    <button class="tab-btn" onclick="switchTab('dreamer')">🚀 Träumer</button>
+                </div>
+
+                <div id="worker" class="content-section active">
+                    <h2>
+                        Lohnt sich der Kauf?
+                        <div class="info-wrapper">
+                            <span class="info-icon">i</span>
+                            <div class="tooltip-box">Berechnet deine echte Arbeitszeit basierend auf dem freien Einkommen (Netto minus Fixkosten).</div>
+                        </div>
+                    </h2>
+                    <p class="desc">Erstelle deinen Warenkorb und berechne die Arbeitszeit.</p>
+
+                    <label style="font-weight:600; margin-bottom:5px; display:block;">Produkte hinzufügen</label>
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="product-search" class="search-input" placeholder="Produkt suchen..." autocomplete="off">
+                            <div id="suggestions" class="suggestions-list"></div>
+                        </div>
+                        <button class="btn-add-manual" onclick="addManualItem()">+ Manuell</button>
+                    </div>
+
+                    <div id="cart-area" class="cart-container">
+                        <div class="cart-header">
+                            <span>Produkt</span>
+                            <span>Preis (€)</span>
+                            <span>Resale (€)</span>
+                            <span></span>
+                        </div>
+                        <div id="cart-list"></div>
+                        
+                        <div class="cart-summary">
+                            <div>
+                                <div class="summary-label">Gesamtsumme</div>
+                                <div class="summary-val" id="total-price-display">0,00 €</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="summary-label">Effektive Kosten</div>
+                                <div class="summary-val" style="color:var(--success)" id="total-effective-display">0,00 €</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Netto-Monatslohn (€)</label>
+                        <input type="number" id="w-income" placeholder="2500" oninput="calcWorker(); saveToLocal();">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Fixkosten (€)</label>
+                        <input type="number" id="w-expenses" placeholder="1200" oninput="calcWorker(); saveToLocal();">
+                        <div id="fixcost-feedback"></div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Nutzung (Jahre)</label>
+                            <input type="number" id="w-years" value="2" oninput="calcWorker()">
+                        </div>
+                        <div class="input-group">
+                            <label>Häufigkeit</label>
+                            <select id="w-freq" onchange="calcWorker()">
+                                <option value="365">Täglich</option>
+                                <option value="52">Wöchentlich</option>
+                                <option value="12">Monatlich</option>
+                                <option value="1">Einmalig</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-calc" onclick="calcWorker()">Ergebnis aktualisieren</button>
+
+                    <div id="w-result-container" class="result-container">
+                        <table class="wage-table">
+                            <tr>
+                                <td class="wage-label">Dein Netto-Stundenlohn:</td>
+                                <td class="wage-val" id="val-wage-base">0,00 €</td>
+                            </tr>
+                            <tr>
+                                <td class="wage-label">Nach Fixkosten (Real):</td>
+                                <td class="wage-val signal-red" id="val-wage-real">0,00 €</td>
+                            </tr>
+                        </table>
+
+                        <div class="hero-grid">
+                            <div class="hero-box">
+                                <span class="hero-label">Stunden</span>
+                                <span class="hero-val" id="val-hours">0</span>
+                            </div>
+                            <div class="hero-box">
+                                <span class="hero-label">Arbeitstage</span>
+                                <span class="hero-val" id="val-days">0</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-footer">
+                            <div class="detail-item">
+                                <span>Kosten pro Nutzung (Effektiv):</span>
+                                <span class="val-highlight" id="w-cpu-text">0,00 €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dreamer" class="content-section">
+                    <h2>
+                        Sparplan & ETF Check
+                        <div class="info-wrapper">
+                            <span class="info-icon">i</span>
+                            <div class="tooltip-box">Vergleich: Sparen für Konsum (Inflation frisst Geld) vs. ETF-Investment (Zinsen arbeiten für dich).</div>
+                        </div>
+                    </h2>
+                    <p class="desc">ETF vs. Produkt-Wertentwicklung</p>
+
+                    <div class="presets">
+                        <div class="chip" onclick="setDream(15000)">🚗 Auto</div>
+                        <div class="chip" onclick="setDream(80000)">🏎️ Sportwagen</div>
+                        <div class="chip" onclick="setDream(500000)">🏡 Haus</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Wunsch-Preis aktuell (€)</label>
+                        <input type="number" id="d-price" placeholder="z.B. 15000">
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Ziel (Jahre)</label>
+                            <select id="d-years">
+                                <option value="3">3 Jahre</option>
+                                <option value="5" selected>5 Jahre</option>
+                                <option value="10">10 Jahre</option>
+                                <option value="20">20 Jahre</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Wertsteigerung Produkt (%)</label>
+                            <input type="number" id="d-appreciation" value="2" placeholder="Inflation">
+                        </div>
+                    </div>
+
+                    <button class="btn-calc" style="background: linear-gradient(90deg, #ec4899, #8b5cf6);" onclick="calcDream()">Verlauf berechnen</button>
+
+                    <div id="d-result-container" class="result-container" style="display:none;">
+                        <div style="background:#fff5f5; border:1px solid #fecaca; border-radius:16px; padding:15px; text-align:center;">
+                            <div style="font-size: 0.8rem; text-transform: uppercase; color:#b91c1c; font-weight:700;">Nötige Sparrate</div>
+                            <div class="big-number" id="d-rate" style="font-size: 1.8rem; font-weight: 800; color: #be185d; margin: 5px 0;">0 € / Mo</div>
+                            <div style="font-size:0.8rem; color:#be185d;">um den Preis ohne Zinsen zu erreichen</div>
+                        </div>
+                        <p style="text-align: center; font-size: 0.8rem; color: var(--text-light); margin-top: 10px;">👉 Siehe rechts für den Chart-Verlauf!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-wrapper">
+                <div id="sidebar-benchmark" class="benchmark-card">
+                    <div class="benchmark-header">
+                        <h3 class="benchmark-title">Der Durchschnitt</h3>
+                        <p class="benchmark-sub">Arbeitszeit eines Durchschnittsverdieners in DE (Basis: 2.350€ Netto).</p>
+                    </div>
+                    <div class="scroll-container">
+                        <div class="scroll-track">
+                            <div class="benchmark-item" onclick="addFromTicker('iPhone 16 Pro', 1200)"><span class="b-icon">📱</span><div class="b-info"><span class="b-name">iPhone Pro</span><span class="b-price">1.200 €</span></div><div class="b-time">22 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('PS5', 550)"><span class="b-icon">🎮</span><div class="b-info"><span class="b-name">PS5</span><span class="b-price">550 €</span></div><div class="b-time">10 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Tankfüllung', 80)"><span class="b-icon">⛽</span><div class="b-info"><span class="b-name">Tankfüllung</span><span class="b-price">80 €</span></div><div class="b-time">1,5 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Sneaker', 180)"><span class="b-icon">👟</span><div class="b-info"><span class="b-name">Sneaker</span><span class="b-price">180 €</span></div><div class="b-time">3,5 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Fitness', 40)"><span class="b-icon">💪</span><div class="b-info"><span class="b-name">Fitness</span><span class="b-price">40 €</span></div><div class="b-time">6 Std</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Netflix (1J)', 216)"><span class="b-icon">📺</span><div class="b-info"><span class="b-name">Netflix (1J)</span><span class="b-price">216 €</span></div><div class="b-time">4 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('iPhone 16 Pro', 1200)"><span class="b-icon">📱</span><div class="b-info"><span class="b-name">iPhone Pro</span><span class="b-price">1.200 €</span></div><div class="b-time">22 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('PS5', 550)"><span class="b-icon">🎮</span><div class="b-info"><span class="b-name">PS5</span><span class="b-price">550 €</span></div><div class="b-time">10 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Tankfüllung', 80)"><span class="b-icon">⛽</span><div class="b-info"><span class="b-name">Tankfüllung</span><span class="b-price">80 €</span></div><div class="b-time">1,5 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Sneaker', 180)"><span class="b-icon">👟</span><div class="b-info"><span class="b-name">Sneaker</span><span class="b-price">180 €</span></div><div class="b-time">3,5 Tage</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Fitness', 40)"><span class="b-icon">💪</span><div class="b-info"><span class="b-name">Fitness</span><span class="b-price">40 €</span></div><div class="b-time">6 Std</div></div>
+                            <div class="benchmark-item" onclick="addFromTicker('Netflix (1J)', 216)"><span class="b-icon">📺</span><div class="b-info"><span class="b-name">Netflix (1J)</span><span class="b-price">216 €</span></div><div class="b-time">4 Tage</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sidebar-chart" class="chart-card">
+                    <div class="benchmark-header" style="border:none; padding-bottom: 5px;">
+                        <h3 class="benchmark-title">📈 Vermögens-Entwicklung</h3>
+                        <p class="benchmark-sub">Vergleich: Sparrate im ETF vs. Preissteigerung.</p>
+                    </div>
+                    <div class="chart-canvas-wrapper" id="chart-wrapper">
+                        <div id="chart-placeholder" class="chart-placeholder">
+                            <div class="chart-placeholder-icon">📊</div>
+                            <div>Fülle links die Daten aus,<br>um den Graphen zu sehen.</div>
+                        </div>
+                        <canvas id="dreamChart" style="display:none;"></canvas>
+                    </div>
+                    <div class="analysis-box" id="chart-analysis" style="display:none;"></div>
+                </div>
+
+                <div class="ad-container ad-sidebar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ad-container ad-banner"></div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo" style="color:white; font-size:1.2rem;">⏳ WorkWorth</div>
+            <p class="copyright">&copy; 2023 WorkWorth. Dein Tool für finanzielle Klarheit.</p>
+            <div class="footer-links">
+                <a href="#">Impressum</a>
+                <a href="#">Datenschutz</a>
+                <a href="#">Kontakt</a>
+                <a href="#">Über uns</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. DATEN ---
+        const productDB = [
+            { name: "iPhone 16", price: 949, cat: "Handy" },
+            { name: "iPhone 16 Pro", price: 1199, cat: "Handy" },
+            { name: "Samsung S24", price: 899, cat: "Handy" },
+            { name: "PlayStation 5", price: 549, cat: "Gaming" },
+            { name: "Nintendo Switch", price: 349, cat: "Gaming" },
+            { name: "AirPods Pro", price: 279, cat: "Audio" },
+            { name: "MacBook Air", price: 1299, cat: "Laptop" },
+            { name: "GoPro Hero 12", price: 399, cat: "Kamera" }
+        ];
+        
+        let cartItemCount = 0; 
+
+        // --- 2. INIT ---
+        window.onload = function() {
+            if(localStorage.getItem('income')) document.getElementById('w-income').value = localStorage.getItem('income');
+            if(localStorage.getItem('expenses')) document.getElementById('w-expenses').value = localStorage.getItem('expenses');
+            checkFixCosts();
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('income', document.getElementById('w-income').value);
+            localStorage.setItem('expenses', document.getElementById('w-expenses').value);
+        }
+
+        // --- 3. WARENKORB LOGIK ---
+        const searchInput = document.getElementById('product-search');
+        const suggestionsBox = document.getElementById('suggestions');
+        const cartList = document.getElementById('cart-list');
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            suggestionsBox.innerHTML = ''; 
+            if (query.length < 1) { suggestionsBox.style.display = 'none'; return; }
+            const matches = productDB.filter(p => p.name.toLowerCase().includes(query));
+            if (matches.length > 0) {
+                suggestionsBox.style.display = 'block';
+                matches.forEach(product => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `<span><span class="suggestion-cat">${product.cat}</span>${product.name}</span><span style="font-weight:bold">${product.price} €</span>`;
+                    div.onclick = () => addCartRow(product.name, product.price, 0); 
+                    suggestionsBox.appendChild(div);
+                });
+            } else { suggestionsBox.style.display = 'none'; }
+        });
+
+        document.addEventListener('click', function(e) { if (e.target !== searchInput) suggestionsBox.style.display = 'none'; });
+
+        function addManualItem() { addCartRow("Manuelles Produkt", 0, 0); }
+        function addFromTicker(name, price) { switchTab('worker'); addCartRow(name, price, 0); }
+
+        function addCartRow(name, price, resell) {
+            cartItemCount++;
+            const rowId = 'cart-item-' + cartItemCount;
+            const div = document.createElement('div');
+            div.className = 'cart-row';
+            div.id = rowId;
+            div.innerHTML = `
+                <div class="input-with-label"><span class="input-label-tiny">Produkt</span><input type="text" class="cart-input cart-input-name" value="${name}"></div>
+                <div class="input-with-label"><span class="input-label-tiny">Preis</span><input type="number" class="cart-input cart-input-price" value="${price}" oninput="calcWorker()"></div>
+                <div class="input-with-label"><span class="input-label-tiny">Wiederverkauf</span><input type="number" class="cart-input cart-input-resell" value="${resell}" oninput="calcWorker()"></div>
+                <button class="btn-remove" onclick="removeCartRow('${rowId}')">×</button>
+            `;
+            cartList.appendChild(div);
+            searchInput.value = ''; suggestionsBox.style.display = 'none'; calcWorker();
+        }
+
+        function removeCartRow(id) { document.getElementById(id).remove(); calcWorker(); }
+
+        // --- 4. BERECHNUNG WORKER ---
+        function calcWorker() {
+            const income = parseFloat(document.getElementById('w-income').value) || 0;
+            const expenses = parseFloat(document.getElementById('w-expenses').value) || 0;
+            
+            let totalPrice = 0; let totalResell = 0;
+            document.querySelectorAll('.cart-input-price').forEach(input => { totalPrice += parseFloat(input.value) || 0; });
+            document.querySelectorAll('.cart-input-resell').forEach(input => { totalResell += parseFloat(input.value) || 0; });
+
+            document.getElementById('total-price-display').innerText = totalPrice.toLocaleString('de-DE', {minimumFractionDigits: 2}) + ' €';
+            const effectiveTotal = Math.max(0, totalPrice - totalResell);
+            document.getElementById('total-effective-display').innerText = effectiveTotal.toLocaleString('de-DE', {minimumFractionDigits: 2}) + ' €';
+
+            checkFixCosts();
+            if(income <= 0) return;
+
+            const disposable = income - expenses;
+            document.getElementById('w-result-container').style.display = 'block';
+
+            const baseWage = income / 173.33;
+            let realWage = 0; let totalHours = 0; let totalDays = 0;
+
+            if (disposable <= 0) {
+                document.getElementById('val-wage-base').innerText = baseWage.toFixed(2) + " €";
+                document.getElementById('val-wage-real').innerText = "0,00 €";
+                document.getElementById('val-hours').innerText = "∞";
+                document.getElementById('val-days').innerText = "∞";
+                document.getElementById('w-cpu-text').innerText = "Unbezahlbar";
+            } else {
+                realWage = disposable / 173.33;
+                totalHours = effectiveTotal / realWage;
+                totalDays = totalHours / 8; 
+
+                document.getElementById('val-wage-base').innerText = baseWage.toFixed(2) + " €";
+                document.getElementById('val-wage-real').innerText = realWage.toFixed(2) + " €";
+                document.getElementById('val-hours').innerText = Math.round(totalHours);
+                document.getElementById('val-days').innerText = totalDays.toFixed(1);
+
+                const years = parseFloat(document.getElementById('w-years').value) || 1;
+                const freq = parseFloat(document.getElementById('w-freq').value) || 1;
+                const totalUses = years * freq;
+                const cpu = effectiveTotal / totalUses;
+                document.getElementById('w-cpu-text').innerText = cpu.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+            }
+        }
+
+        function checkFixCosts() {
+            const income = parseFloat(document.getElementById('w-income').value) || 0;
+            const expenses = parseFloat(document.getElementById('w-expenses').value) || 0;
+            const feedbackBox = document.getElementById('fixcost-feedback');
+            if(income <= 0 || expenses <= 0) { feedbackBox.style.display = 'none'; return; }
+            const ratio = (expenses / income) * 100;
+            feedbackBox.style.display = 'flex';
+            if (ratio > 50) {
+                const diff = (ratio - 50).toFixed(1);
+                feedbackBox.className = 'feedback-bad';
+                feedbackBox.innerHTML = `<span>⚠️ Fixkosten ${diff}% über Idealwert (50%).</span>`;
+            } else {
+                feedbackBox.className = 'feedback-good';
+                feedbackBox.innerHTML = `<span>✅ Vorbildliche Fixkosten.</span>`;
+            }
+        }
+
+        // --- 5. TABS ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            const btns = document.querySelectorAll('.tab-btn');
+            if(tabName === 'worker') btns[0].classList.add('active'); else btns[1].classList.add('active');
+
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            const sidebarBench = document.getElementById('sidebar-benchmark');
+            const sidebarChart = document.getElementById('sidebar-chart');
+            if(tabName === 'worker') { sidebarBench.style.display = 'flex'; sidebarChart.style.display = 'none'; }
+            else { sidebarBench.style.display = 'none'; sidebarChart.style.display = 'flex'; }
+        }
+
+        // --- 6. DREAMER LOGIK ---
+        function setDream(val) { document.getElementById('d-price').value = val; }
+        
+        let myChart = null;
+        function calcDream() {
+            const currentPrice = parseFloat(document.getElementById('d-price').value) || 0;
+            const years = parseInt(document.getElementById('d-years').value) || 5;
+            const appreciation = parseFloat(document.getElementById('d-appreciation').value) || 0;
+            
+            if(currentPrice <= 0) return;
+            document.getElementById('d-result-container').style.display = 'block';
+            document.getElementById('chart-placeholder').style.display = 'none';
+            document.getElementById('dreamChart').style.display = 'block';
+            document.getElementById('chart-analysis').style.display = 'block';
+
+            const months = years * 12;
+            const monthlySave = currentPrice / months; 
+            document.getElementById('d-rate').innerText = monthlySave.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) + " / Mo";
+
+            const labels = []; const dataProduct = []; const dataETF = [];
+            let productVal = currentPrice; let etfVal = 0;
+            const annualInvest = monthlySave * 12; const etfRate = 0.07; let overtakeYear = -1;
+
+            for (let i = 0; i <= years; i++) {
+                labels.push("Jahr " + i);
+                productVal = currentPrice * Math.pow(1 + (appreciation/100), i);
+                dataProduct.push(productVal);
+                if(i === 0) etfVal = 0; else etfVal = (etfVal * (1 + etfRate)) + annualInvest;
+                dataETF.push(etfVal);
+                if(i > 0 && etfVal > productVal && overtakeYear === -1) overtakeYear = i;
+            }
+
+            renderChart(labels, dataProduct, dataETF);
+            const analysisEl = document.getElementById('chart-analysis');
+            if(overtakeYear !== -1 && overtakeYear < years) {
+                analysisEl.innerHTML = `<strong style="color:var(--success)">Glückwunsch!</strong><br>Bereits im <strong>Jahr ${overtakeYear}</strong> schlägt dein Depot den Preis.`;
+            } else if (etfVal > productVal) {
+                analysisEl.innerHTML = `<strong style="color:var(--success)">Ziel erreicht!</strong><br>Depot: ${etfVal.toLocaleString('de-DE',{maximumFractionDigits:0})}€ vs. Kosten: ${productVal.toLocaleString('de-DE',{maximumFractionDigits:0})}€.`;
+            } else {
+                analysisEl.innerHTML = `<strong>Knapp.</strong><br>Inflation frisst Rendite auf.`;
+            }
+        }
+
+        function renderChart(labels, dataProduct, dataETF) {
+            const ctx = document.getElementById('dreamChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Produkt Preis (Rot)', data: dataProduct, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.3, fill: false },
+                        { label: 'ETF Depot (Grün)', data: dataETF, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.3, fill: true }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+        }
+    </script>
+</body>
+</html>
