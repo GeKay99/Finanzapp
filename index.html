@@ -3,25 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkWorth - Der Lebenszeit Rechner</title>
-    
+    <title>Nettozeit - Der Lebenszeit Rechner</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <div class="logo">
+        <div class="logo" onclick="switchView('home', document.querySelector('.nav-btn'))" title="Zur Startseite">
             <span class="logo-icon">⏳</span>
-            WorkWorth
+            Nettozeit
         </div>
         <nav>
             <button class="nav-btn active" onclick="switchView('home', this)">Zeit-Rechner</button>
+            <button class="nav-btn" onclick="switchView('lists', this)">Spar-Ziele</button>
             <button class="nav-btn" onclick="switchView('salary', this)">Brutto-Netto</button> 
-            <button class="nav-btn">Tipps</button>
         </nav>
     </header>
 
@@ -31,7 +28,6 @@
         
         <div id="view-home" class="view-section active-view">
             <div class="page-grid">
-                
                 <div class="main-wrapper">
                     <div class="tabs">
                         <button class="tab-btn active" onclick="switchTab('worker')">💼 Arbeitnehmer</button>
@@ -39,348 +35,135 @@
                     </div>
 
                     <div id="worker" class="content-section active">
-                        <h2>
-                            Lohnt sich der Kauf?
-                            <div class="info-wrapper">
-                                <span class="info-icon">i</span>
-                                <div class="tooltip-box">Berechnet deine echte Arbeitszeit basierend auf dem freien Einkommen (Netto minus Fixkosten).</div>
-                            </div>
-                        </h2>
+                        <h2>Lohnt sich der Kauf? <div class="info-wrapper"><span class="info-icon">i</span><div class="tooltip-box">Berechnet Arbeitszeit basierend auf freiem Einkommen.</div></div></h2>
                         <p class="desc">Erstelle deinen Warenkorb und berechne die Arbeitszeit.</p>
-
-                        <label style="font-weight:600; margin-bottom:5px; display:block;">Produkte hinzufügen</label>
+                        
                         <div class="search-container">
                             <div class="search-input-wrapper">
                                 <span class="search-icon">🔍</span>
-                                <input type="text" id="product-search" class="search-input" placeholder="Produkt suchen..." autocomplete="off">
+                                <input type="text" id="product-search" class="search-input" placeholder="Schnellsuche..." autocomplete="off">
                                 <div id="suggestions" class="suggestions-list"></div>
                             </div>
                             <button class="btn-add-manual" onclick="addManualItem()">+ Manuell</button>
                         </div>
 
                         <div id="cart-area" class="cart-container" style="display:none;">
-                            <div class="cart-header">
-                                <span>Produkt</span>
-                                <span>Preis (€)</span>
-                                <span>Resale (€)</span>
-                                <span></span>
-                            </div>
+                            <div class="cart-header"><span>Produkt</span><span>Preis (€)</span><span>Resale (€)</span><span></span></div>
                             <div id="cart-list"></div>
                             <div class="cart-summary">
-                                <div>
-                                    <div class="summary-label">Gesamtsumme</div>
-                                    <div class="summary-val" id="total-price-display">0,00 €</div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div class="summary-label">Effektive Kosten</div>
-                                    <div class="summary-val" style="color:var(--success)" id="total-effective-display">0,00 €</div>
-                                </div>
+                                <div><div class="summary-label">Gesamtsumme</div><div class="summary-val" id="total-price-display">0,00 €</div></div>
+                                <div style="text-align: right;"><div class="summary-label">Effektive Kosten</div><div class="summary-val" style="color:var(--success)" id="total-effective-display">0,00 €</div></div>
                             </div>
                         </div>
 
-                        <div class="input-group">
-                            <label>Netto-Monatslohn (€)</label>
-                            <input type="number" id="w-income" placeholder="2500" oninput="calcWorker(); saveToLocal();">
-                        </div>
-
-                        <div class="input-group">
-                            <label>Fixkosten (€)</label>
-                            <input type="number" id="w-expenses" placeholder="1200" oninput="calcWorker(); saveToLocal();">
-                            <div id="fixcost-feedback"></div>
-                        </div>
-
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label>Nutzung (Jahre)</label>
-                                <input type="number" id="w-years" value="2" oninput="calcWorker()">
-                            </div>
-                            <div class="input-group">
-                                <label>Häufigkeit</label>
-                                <select id="w-freq" onchange="calcWorker()">
-                                    <option value="365">Täglich</option>
-                                    <option value="52">Wöchentlich</option>
-                                    <option value="12">Monatlich</option>
-                                    <option value="1">Einmalig</option>
-                                </select>
-                            </div>
-                        </div>
-
+                        <div class="input-group"><label>Netto-Monatslohn (€)</label><input type="number" id="w-income" placeholder="2500" oninput="calcWorker(); saveToLocal();"></div>
+                        <div class="input-group"><label>Fixkosten (€)</label><input type="number" id="w-expenses" placeholder="1200" oninput="calcWorker(); saveToLocal();"><div id="fixcost-feedback"></div></div>
+                        <div class="input-row"><div class="input-group"><label>Nutzung (Jahre)</label><input type="number" id="w-years" value="2" oninput="calcWorker()"></div><div class="input-group"><label>Häufigkeit</label><select id="w-freq" onchange="calcWorker()"><option value="365">Täglich</option><option value="52">Wöchentlich</option><option value="12">Monatlich</option><option value="1">Einmalig</option></select></div></div>
                         <button class="btn-calc" onclick="calcWorker()">Ergebnis aktualisieren</button>
-
+                        
                         <div id="w-result-container" class="result-container">
-                            <table class="wage-table">
-                                <tr>
-                                    <td class="wage-label">Dein Netto-Stundenlohn:</td>
-                                    <td class="wage-val" id="val-wage-base">0,00 €</td>
-                                </tr>
-                                <tr>
-                                    <td class="wage-label">Nach Fixkosten (Real):</td>
-                                    <td class="wage-val signal-red" id="val-wage-real">0,00 €</td>
-                                </tr>
-                            </table>
-
-                            <div class="hero-grid">
-                                <div class="hero-box">
-                                    <span class="hero-label">Stunden</span>
-                                    <span class="hero-val" id="val-hours">0</span>
-                                </div>
-                                <div class="hero-box">
-                                    <span class="hero-label">Arbeitstage</span>
-                                    <span class="hero-val" id="val-days">0</span>
-                                </div>
-                            </div>
-
-                            <div class="detail-footer">
-                                <div class="detail-item">
-                                    <span>Kosten pro Nutzung (Effektiv):</span>
-                                    <span class="val-highlight" id="w-cpu-text">0,00 €</span>
-                                </div>
-                            </div>
+                            <table class="wage-table"><tr><td class="wage-label">Dein Netto-Stundenlohn:</td><td class="wage-val" id="val-wage-base">0,00 €</td></tr><tr><td class="wage-label">Nach Fixkosten (Real):</td><td class="wage-val signal-red" id="val-wage-real">0,00 €</td></tr></table>
+                            <div class="hero-grid"><div class="hero-box"><span class="hero-label">Stunden</span><span class="hero-val" id="val-hours">0</span></div><div class="hero-box"><span class="hero-label">Arbeitstage</span><span class="hero-val" id="val-days">0</span></div></div>
+                            <div class="detail-footer"><div class="detail-item"><span>Kosten pro Nutzung (Effektiv):</span><span class="val-highlight" id="w-cpu-text">0,00 €</span></div></div>
                         </div>
                     </div>
 
                     <div id="dreamer" class="content-section">
-                        <h2>
-                            Sparplan & ETF Check
-                            <div class="info-wrapper">
-                                <span class="info-icon">i</span>
-                                <div class="tooltip-box">Vergleich: Sparen für Konsum (Inflation frisst Geld) vs. ETF-Investment (Zinsen arbeiten für dich).</div>
-                            </div>
-                        </h2>
+                        <h2>Sparplan & ETF Check</h2>
                         <p class="desc">ETF vs. Produkt-Wertentwicklung</p>
-
-                        <div class="presets">
-                            <div class="chip" onclick="setDream(15000)">🚗 Auto</div>
-                            <div class="chip" onclick="setDream(80000)">🏎️ Sportwagen</div>
-                            <div class="chip" onclick="setDream(500000)">🏡 Haus</div>
-                        </div>
-
-                        <div class="input-group">
-                            <label>Wunsch-Preis aktuell (€)</label>
-                            <input type="number" id="d-price" placeholder="z.B. 15000">
-                        </div>
-
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label>Ziel (Jahre)</label>
-                                <select id="d-years">
-                                    <option value="3">3 Jahre</option>
-                                    <option value="5" selected>5 Jahre</option>
-                                    <option value="10">10 Jahre</option>
-                                    <option value="20">20 Jahre</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label>Wertsteigerung Produkt (%)</label>
-                                <input type="number" id="d-appreciation" value="2" placeholder="Inflation">
-                            </div>
-                        </div>
-
+                        <div class="presets"><div class="chip" onclick="setDream(15000)">🚗 Auto</div><div class="chip" onclick="setDream(80000)">🏎️ Sportwagen</div><div class="chip" onclick="setDream(500000)">🏡 Haus</div></div>
+                        <div class="input-group"><label>Wunsch-Preis aktuell (€)</label><input type="number" id="d-price" placeholder="z.B. 15000"></div>
+                        <div class="input-row"><div class="input-group"><label>Ziel (Jahre)</label><select id="d-years"><option value="3">3 Jahre</option><option value="5" selected>5 Jahre</option><option value="10">10 Jahre</option><option value="20">20 Jahre</option></select></div><div class="input-group"><label>Wertsteigerung Produkt (%)</label><input type="number" id="d-appreciation" value="2" placeholder="Inflation"></div></div>
                         <button class="btn-calc" style="background: linear-gradient(90deg, #ec4899, #8b5cf6);" onclick="calcDream()">Verlauf berechnen</button>
-
-                        <div id="d-result-container" class="result-container" style="display:none;">
-                            <div style="background:#fff5f5; border:1px solid #fecaca; border-radius:16px; padding:15px; text-align:center;">
-                                <div style="font-size: 0.8rem; text-transform: uppercase; color:#b91c1c; font-weight:700;">Nötige Sparrate</div>
-                                <div class="big-number" id="d-rate" style="font-size: 1.8rem; font-weight: 800; color: #be185d; margin: 5px 0;">0 € / Mo</div>
-                                <div style="font-size:0.8rem; color:#be185d;">um den Preis ohne Zinsen zu erreichen</div>
-                            </div>
-                            <p style="text-align: center; font-size: 0.8rem; color: var(--text-light); margin-top: 10px;">👉 Siehe rechts für den Chart-Verlauf!</p>
-                        </div>
+                        <div id="d-result-container" class="result-container" style="display:none;"><div style="background:#fff5f5; border:1px solid #fecaca; border-radius:16px; padding:15px; text-align:center;"><div style="font-size: 0.8rem; text-transform: uppercase; color:#b91c1c; font-weight:700;">Nötige Sparrate</div><div class="big-number" id="d-rate" style="font-size: 1.8rem; font-weight: 800; color: #be185d; margin: 5px 0;">0 € / Mo</div><div style="font-size:0.8rem; color:#be185d;">um den Preis ohne Zinsen zu erreichen</div></div><p style="text-align: center; font-size: 0.8rem; color: var(--text-light); margin-top: 10px;">👉 Siehe rechts für den Chart-Verlauf!</p></div>
                     </div>
                 </div>
 
                 <div class="sidebar-wrapper">
                     <div id="sidebar-benchmark" class="benchmark-card">
-                        <div class="benchmark-header">
-                            <h3 class="benchmark-title">Der Durchschnitt</h3>
-                            <p class="benchmark-sub">Arbeitszeit eines Durchschnittsverdieners in DE (Basis: 2.350€ Netto).</p>
-                        </div>
-                        <div class="scroll-container">
-                            <div class="scroll-track">
-                                <div class="benchmark-item" onclick="addFromTicker('iPhone 16 Pro', 1200)"><span class="b-icon">📱</span><div class="b-info"><span class="b-name">iPhone Pro</span><span class="b-price">1.200 €</span></div><div class="b-time">22 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('PS5', 550)"><span class="b-icon">🎮</span><div class="b-info"><span class="b-name">PS5</span><span class="b-price">550 €</span></div><div class="b-time">10 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Tankfüllung', 80)"><span class="b-icon">⛽</span><div class="b-info"><span class="b-name">Tankfüllung</span><span class="b-price">80 €</span></div><div class="b-time">1,5 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Sneaker', 180)"><span class="b-icon">👟</span><div class="b-info"><span class="b-name">Sneaker</span><span class="b-price">180 €</span></div><div class="b-time">3,5 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Fitness', 40)"><span class="b-icon">💪</span><div class="b-info"><span class="b-name">Fitness</span><span class="b-price">40 €</span></div><div class="b-time">6 Std</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Netflix (1J)', 216)"><span class="b-icon">📺</span><div class="b-info"><span class="b-name">Netflix (1J)</span><span class="b-price">216 €</span></div><div class="b-time">4 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('iPhone 16 Pro', 1200)"><span class="b-icon">📱</span><div class="b-info"><span class="b-name">iPhone Pro</span><span class="b-price">1.200 €</span></div><div class="b-time">22 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('PS5', 550)"><span class="b-icon">🎮</span><div class="b-info"><span class="b-name">PS5</span><span class="b-price">550 €</span></div><div class="b-time">10 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Tankfüllung', 80)"><span class="b-icon">⛽</span><div class="b-info"><span class="b-name">Tankfüllung</span><span class="b-price">80 €</span></div><div class="b-time">1,5 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Sneaker', 180)"><span class="b-icon">👟</span><div class="b-info"><span class="b-name">Sneaker</span><span class="b-price">180 €</span></div><div class="b-time">3,5 Tage</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Fitness', 40)"><span class="b-icon">💪</span><div class="b-info"><span class="b-name">Fitness</span><span class="b-price">40 €</span></div><div class="b-time">6 Std</div></div>
-                                <div class="benchmark-item" onclick="addFromTicker('Netflix (1J)', 216)"><span class="b-icon">📺</span><div class="b-info"><span class="b-name">Netflix (1J)</span><span class="b-price">216 €</span></div><div class="b-time">4 Tage</div></div>
-                            </div>
-                        </div>
+                        <div class="benchmark-header"><h3 class="benchmark-title">Der Durchschnitt</h3><p class="benchmark-sub">Arbeitszeit eines Durchschnittsverdieners in DE (Basis: 2.350€ Netto).</p></div>
+                        <div class="scroll-container"><div class="scroll-track"></div></div>
                     </div>
-
                     <div id="sidebar-chart" class="chart-card">
-                        <div class="benchmark-header" style="border:none; padding-bottom: 5px;">
-                            <h3 class="benchmark-title">📈 Vermögens-Entwicklung</h3>
-                            <p class="benchmark-sub">Vergleich: Sparrate im ETF vs. Preissteigerung.</p>
-                        </div>
-                        <div class="chart-canvas-wrapper" id="chart-wrapper">
-                            <div id="chart-placeholder" class="chart-placeholder">
-                                <div class="chart-placeholder-icon">📊</div>
-                                <div>Fülle links die Daten aus,<br>um den Graphen zu sehen.</div>
-                            </div>
-                            <canvas id="dreamChart" style="display:none;"></canvas>
-                        </div>
-                        <div class="analysis-box" id="chart-analysis" style="display:none;"></div>
+                        <div class="benchmark-header" style="border:none; padding-bottom: 5px;"><h3 class="benchmark-title">📈 Vermögens-Entwicklung</h3><p class="benchmark-sub">Vergleich: Sparrate im ETF vs. Preissteigerung.</p></div>
+                        <div class="chart-canvas-wrapper" id="chart-wrapper"><div id="chart-placeholder" class="chart-placeholder"><div class="chart-placeholder-icon">📊</div><div>Fülle links die Daten aus,<br>um den Graphen zu sehen.</div></div><canvas id="dreamChart" style="display:none;"></canvas></div><div class="analysis-box" id="chart-analysis" style="display:none;"></div>
                     </div>
-
                     <div class="ad-container ad-sidebar"></div>
                 </div>
             </div>
         </div>
 
-        <div id="view-salary" class="view-section">
-            <div class="salary-container">
-                <h2>💶 Brutto-Netto Rechner <span style="font-size:0.8rem; color:#64748b; margin-left:10px; font-weight:400;">(Schätzung 2024/25)</span></h2>
-                <p class="desc">Detaillierte Berechnung inkl. Krankenkassen-Zusatzbeitrag und Bundesland-Faktoren.</p>
+        <div id="view-lists" class="view-section">
+            <div class="lists-container">
+                <div class="lists-sidebar">
+                    <button class="btn-new-list" onclick="createNewList()">+ Neue Liste</button>
+                    <div id="lists-nav" class="lists-nav"></div>
+                </div>
 
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>
-                            Brutto-Einkommen
-                            <div class="info-wrapper">
-                                <span class="info-icon">i</span>
-                                <div class="tooltip-box">Wähle, ob du dein Gehalt pro Jahr (Standard) oder pro Monat eingeben möchtest.</div>
-                            </div>
-                        </label>
-                        <div style="display:flex; gap:10px;">
-                            <input type="number" id="s-brutto" placeholder="50000" style="flex:1;">
-                            <select id="s-period" style="width:110px;">
-                                <option value="year" selected>Jährlich</option>
-                                <option value="month">Monatlich</option>
-                            </select>
-                        </div>
-                    </div>
+                <div class="lists-content" id="lists-content-area">
                     
-                    <div class="input-group">
-                        <label>
-                            Steuerklasse
-                            <div class="info-wrapper">
-                                <span class="info-icon">i</span>
-                                <div class="tooltip-box tooltip-wide">
-                                    <ul class="tooltip-list">
-                                        <li><strong>Kl. 1:</strong> Ledig, Geschieden, Verwitwet</li>
-                                        <li><strong>Kl. 2:</strong> Alleinerziehend (mit Entlastung)</li>
-                                        <li><strong>Kl. 3:</strong> Verheiratet (Verdiener > Partner)</li>
-                                        <li><strong>Kl. 4:</strong> Verheiratet (ähnlicher Verdienst)</li>
-                                        <li><strong>Kl. 5:</strong> Verheiratet (Verdiener < Partner)</li>
-                                        <li><strong>Kl. 6:</strong> Zweiter Job / Nebenjob</li>
-                                    </ul>
+                    <div id="no-list-selected" style="text-align:center; color:#64748b; margin-top:50px;">
+                        <div style="font-size:3rem; opacity:0.3; margin-bottom:10px;">📋</div>
+                        Wähle eine Liste aus oder erstelle eine neue.
+                    </div>
+
+                    <div id="active-list-view" style="display:none;">
+                        <div class="list-header-flex">
+                            <h2 id="current-list-title" style="margin:0;">Mein Urlaub</h2>
+                            <button class="btn-delete-list" onclick="deleteCurrentList()">Liste löschen</button>
+                        </div>
+
+                        <div class="search-container" style="margin-bottom:20px;">
+                            <div class="search-input-wrapper" onclick="openCatalogModal()" style="cursor: pointer;">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" class="search-input" placeholder="Klicke hier um Produkte zu suchen..." readonly style="cursor: pointer;">
+                            </div>
+                            <button class="btn-add-manual" onclick="addListManualItem()">+ Manuell</button>
+                        </div>
+
+                        <div class="list-items-wrapper">
+                            <div id="list-items-container"></div>
+                        </div>
+
+                        <div class="list-results-card">
+                            <div class="lr-row">
+                                <span>Gesamtsumme:</span>
+                                <strong id="list-total">0,00 €</strong>
+                            </div>
+                            
+                            <div class="lr-input-row">
+                                <span>Bereits angespart:</span>
+                                <input type="number" id="list-saved" value="0" oninput="updateListCalculations()">
+                            </div>
+
+                            <div class="lr-divider"></div>
+
+                            <div class="mini-salary-config">
+                                <div style="font-size:0.8rem; font-weight:700; color:var(--text-light); margin-bottom:8px; text-transform:uppercase;">Dein Lohn (für Berechnung)</div>
+                                <div style="display:flex; gap:10px;">
+                                    <div class="input-with-label" style="flex:1;">
+                                        <span class="input-label-tiny">Netto</span>
+                                        <input type="number" id="list-income-input" class="cart-input" placeholder="Netto" oninput="syncSalaryFromList()">
+                                    </div>
+                                    <div class="input-with-label" style="flex:1;">
+                                        <span class="input-label-tiny">Fixkosten</span>
+                                        <input type="number" id="list-expenses-input" class="cart-input" placeholder="Fixkosten" oninput="syncSalaryFromList()">
+                                    </div>
                                 </div>
                             </div>
-                        </label>
-                        <select id="s-class">
-                            <option value="1" selected>Klasse 1</option>
-                            <option value="2">Klasse 2</option>
-                            <option value="3">Klasse 3</option>
-                            <option value="4">Klasse 4</option>
-                            <option value="5">Klasse 5</option>
-                            <option value="6">Klasse 6</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="input-row-3">
-                    <div class="input-group">
-                        <label>Bundesland</label>
-                        <select id="s-state">
-                            <option value="bw">Baden-Württemberg</option>
-                            <option value="by">Bayern</option>
-                            <option value="be">Berlin</option>
-                            <option value="bb">Brandenburg</option>
-                            <option value="hb">Bremen</option>
-                            <option value="hh">Hamburg</option>
-                            <option value="he">Hessen</option>
-                            <option value="mv">Mecklenburg-Vorpommern</option>
-                            <option value="ni">Niedersachsen</option>
-                            <option value="nw">Nordrhein-Westfalen</option>
-                            <option value="rp">Rheinland-Pfalz</option>
-                            <option value="sl">Saarland</option>
-                            <option value="sn">Sachsen</option>
-                            <option value="st">Sachsen-Anhalt</option>
-                            <option value="sh">Schleswig-Holstein</option>
-                            <option value="th">Thüringen</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Alter (Jahre)</label>
-                        <input type="number" id="s-age" value="30">
-                        <small style="color:#94a3b8; font-size:0.7rem;">PV-Zuschlag ab 23</small>
-                    </div>
-                    <div class="input-group">
-                        <label>
-                            Kinderfreibeträge
-                            <div class="info-wrapper">
-                                <span class="info-icon">i</span>
-                                <div class="tooltip-box">Freibeträge für Kinder (0.5 pro Elternteil). Beeinflusst Soli und Kirchensteuer, weniger Lohnsteuer.</div>
+                            <div class="lr-divider"></div>
+
+                            <div class="lr-row highlight">
+                                <span>Noch zu erarbeiten:</span>
+                                <strong id="list-remaining" style="color:var(--danger)">0,00 €</strong>
                             </div>
-                        </label>
-                        <select id="s-kids">
-                            <option value="0">Keine</option>
-                            <option value="0.5">0.5</option>
-                            <option value="1">1.0</option>
-                            <option value="1.5">1.5</option>
-                            <option value="2">2.0+</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="input-row-3">
-                    <div class="input-group">
-                        <label>Kirchensteuer</label>
-                        <select id="s-church">
-                            <option value="0">Nein</option>
-                            <option value="1">Ja</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Versicherung</label>
-                        <select id="s-kv-type" onchange="toggleKvInput()">
-                            <option value="gkv">Gesetzlich (Pflicht)</option>
-                            <option value="pkv">Privat versichert</option>
-                        </select>
-                    </div>
-                    <div class="input-group" id="kv-rate-group">
-                        <label>
-                            KV-Zusatz %
-                            <div class="info-wrapper">
-                                <span class="info-icon">i</span>
-                                <div class="tooltip-box">Individueller Zusatzbeitrag deiner Krankenkasse (2024 Ø 1,7%).</div>
+                            <div class="lr-time-box">
+                                <div class="lr-time-label">Dafür musst du noch arbeiten:</div>
+                                <div class="lr-time-val" id="list-work-time">0 Std</div>
+                                <div class="lr-time-sub" id="list-wage-info"></div>
                             </div>
-                        </label>
-                        <input type="number" id="s-kv-add" value="1.7" step="0.1">
-                    </div>
-                </div>
-
-                <div class="input-group" style="margin-top:20px; border-top:1px dashed #e2e8f0; padding-top:15px;">
-                    <label>
-                        Fixkosten (Monatlich)
-                        <span style="font-weight:400; color:#64748b; font-size:0.8rem; margin-left:5px;">(Optional)</span>
-                    </label>
-                    <input type="number" id="s-fixcosts" placeholder="z.B. 1200 für Miete etc.">
-                </div>
-
-                <button class="btn-calc" onclick="calculateSalary()">Gehalt Berechnen</button>
-
-                <div id="salary-result-wrapper" class="salary-result-wrapper" style="display:none;">
-                    
-                    <div class="toggle-container">
-                        <button class="toggle-btn active-mode" id="btn-mode-month" onclick="switchSalaryMode('month')">Monatlich</button>
-                        <button class="toggle-btn" id="btn-mode-year" onclick="switchSalaryMode('year')">Jährlich</button>
-                    </div>
-
-                    <div class="salary-result-grid">
-                        <div>
-                            <table class="salary-table" id="salary-table">
-                                </table>
-                        </div>
-                        
-                        <div class="salary-chart-wrap">
-                            <canvas id="salaryChart"></canvas>
                         </div>
                     </div>
 
@@ -388,14 +171,55 @@
             </div>
         </div>
 
+        <div id="view-salary" class="view-section">
+             <div class="salary-container"><h2>💶 Brutto-Netto Rechner <span style="font-size:0.8rem; color:#64748b; margin-left:10px; font-weight:400;">(Schätzung 2024/25)</span></h2><p class="desc">Detaillierte Berechnung inkl. Krankenkassen-Zusatzbeitrag und Bundesland-Faktoren.</p><div class="input-row"><div class="input-group"><label>Brutto-Einkommen</label><div style="display:flex; gap:10px;"><input type="number" id="s-brutto" placeholder="50000" style="flex:1;"><select id="s-period" style="width:110px;"><option value="year" selected>Jährlich</option><option value="month">Monatlich</option></select></div></div><div class="input-group"><label>Steuerklasse</label><select id="s-class"><option value="1">Klasse 1</option><option value="2">Klasse 2</option><option value="3">Klasse 3</option><option value="4" selected>Klasse 4</option><option value="5">Klasse 5</option><option value="6">Klasse 6</option></select></div></div><div class="input-row-3"><div class="input-group"><label>Bundesland</label><select id="s-state"><option value="bw">BaWü</option><option value="by">Bayern</option><option value="be">Berlin</option><option value="bb">Brandenburg</option><option value="hb">Bremen</option><option value="hh">Hamburg</option><option value="he">Hessen</option><option value="mv">Meck-Pomm</option><option value="ni">Niedersachsen</option><option value="nw">NRW</option><option value="rp">Rheinland-Pfalz</option><option value="sl">Saarland</option><option value="sn">Sachsen</option><option value="st">Sachsen-Anhalt</option><option value="sh">Schleswig-Holstein</option><option value="th">Thüringen</option></select></div><div class="input-group"><label>Alter</label><input type="number" id="s-age" value="30"></div><div class="input-group"><label>Kinder</label><select id="s-kids"><option value="0">Keine</option><option value="0.5">0.5</option><option value="1">1.0</option><option value="1.5">1.5</option><option value="2">2.0+</option></select></div></div><div class="input-row-3"><div class="input-group"><label>Kirchensteuer</label><select id="s-church"><option value="0">Nein</option><option value="1">Ja</option></select></div><div class="input-group"><label>Versicherung</label><select id="s-kv-type" onchange="toggleKvInput()"><option value="gkv">Gesetzlich</option><option value="pkv">Privat</option></select></div><div class="input-group" id="kv-rate-group"><label>KV-Zusatz %</label><input type="number" id="s-kv-add" value="1.7" step="0.1"></div></div><div class="input-group" style="margin-top:20px; border-top:1px dashed #e2e8f0; padding-top:15px;"><label>Fixkosten (Monat)<span style="font-weight:400; color:#64748b; font-size:0.8rem; margin-left:5px;">(Optional)</span></label><input type="number" id="s-fixcosts" placeholder="z.B. 1200 für Miete etc."></div><button class="btn-calc" onclick="calculateSalary()">Gehalt Berechnen</button><div id="salary-result-wrapper" class="salary-result-wrapper" style="display:none;"><div class="toggle-container"><button class="toggle-btn active-mode" id="btn-mode-month" onclick="switchSalaryMode('month')">Monatlich</button><button class="toggle-btn" id="btn-mode-year" onclick="switchSalaryMode('year')">Jährlich</button></div><div class="salary-result-grid"><div><table class="salary-table" id="salary-table"></table></div><div class="salary-chart-wrap"><canvas id="salaryChart"></canvas></div></div></div></div>
+        </div>
+
+    </div>
+
+    <div id="catalog-modal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3>🛍️ Produkt-Katalog</h3>
+                <button class="modal-close" onclick="closeCatalogModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-sidebar">
+                    <div class="cat-item active" onclick="filterCatalog('all', this)">Alle</div>
+                    <div class="cat-item" onclick="filterCatalog('Handy', this)">📱 Handys</div>
+                    <div class="cat-item" onclick="filterCatalog('Gaming', this)">🎮 Gaming</div>
+                    <div class="cat-item" onclick="filterCatalog('Audio', this)">🎧 Audio</div>
+                    <div class="cat-item" onclick="filterCatalog('Laptop', this)">💻 Laptops</div>
+                    <div class="cat-item" onclick="filterCatalog('Tablet', this)">📟 Tablets</div>
+                    <div class="cat-item" onclick="filterCatalog('Kamera', this)">📷 Kameras</div>
+                    <div class="cat-item" onclick="filterCatalog('Haushalt', this)">🏠 Haushalt</div>
+                </div>
+
+                <div class="modal-content">
+                    <div class="modal-search-bar">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="catalog-search-input" placeholder="Im Katalog suchen..." oninput="searchCatalog()">
+                    </div>
+                    
+                    <div id="catalog-grid" class="catalog-grid">
+                        </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <span id="selected-count">0 Produkte gewählt</span>
+                <button class="btn-add-selected" onclick="addSelectedToCart()">Auswahl hinzufügen</button>
+            </div>
+        </div>
     </div>
 
     <div class="ad-container ad-banner"></div>
 
     <footer>
         <div class="footer-content">
-            <div class="logo" style="color:white; font-size:1.2rem;">⏳ WorkWorth</div>
-            <p class="copyright">&copy; 2024 WorkWorth. Dein Tool für finanzielle Klarheit.</p>
+            <div class="logo" style="color:white; font-size:1.2rem;">⏳ Nettozeit</div>
+            <p class="copyright">&copy; 2024 Nettozeit. Dein Tool für finanzielle Klarheit.</p>
             <div class="footer-links">
                 <a href="#">Impressum</a>
                 <a href="#">Datenschutz</a>
