@@ -29,6 +29,7 @@ let currentListId = null;
 // Modal State
 let selectedCatalogItems = [];
 let currentCategory = 'all';
+let catalogSource = 'home'; // 'home' or 'list'
 
 // --- INITIALIZATION ---
 window.onload = function() {
@@ -44,12 +45,6 @@ window.onload = function() {
 
     checkFixCosts();
     renderListsNav();
-    
-    // Ticker Init
-    const track = document.querySelector('.scroll-track');
-    if(track && track.children.length === 0) {
-        // Fallback or init logic if dynamic
-    }
 };
 
 function saveToLocal() {
@@ -81,30 +76,103 @@ function switchTab(tabName) {
     else { sidebarBench.style.display = 'none'; sidebarChart.style.display = 'flex'; }
 }
 
-// --- SEARCH LOGIC (WORKER TAB) ---
-const searchInput = document.getElementById('product-search');
-const suggestionsBox = document.getElementById('suggestions');
-
-if(searchInput) {
-    searchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        suggestionsBox.innerHTML = ''; 
-        if (query.length < 1) { suggestionsBox.style.display = 'none'; return; }
-        const matches = productDB.filter(p => p.name.toLowerCase().includes(query));
-        if (matches.length > 0) {
-            suggestionsBox.style.display = 'block';
-            matches.forEach(product => {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.innerHTML = `<span><span class="suggestion-cat">${product.cat}</span>${product.name}</span><span style="font-weight:bold">${product.price} €</span>`;
-                div.onclick = () => addCartRow(product.name, product.price, 0); 
-                suggestionsBox.appendChild(div);
-            });
-        } else { suggestionsBox.style.display = 'none'; }
-    });
-    document.addEventListener('click', function(e) { if (e.target !== searchInput) suggestionsBox.style.display = 'none'; });
+// --- CATALOG MODAL LOGIC (NEU & UNIFIED) ---
+function openCatalogModal(source) {
+    catalogSource = source; // Save where we came from
+    document.getElementById('catalog-modal').style.display = 'flex';
+    selectedCatalogItems = [];
+    currentCategory = 'all';
+    document.getElementById('catalog-search-input').value = '';
+    renderCatalog();
+    updateFooterCount();
 }
 
+function closeCatalogModal() {
+    document.getElementById('catalog-modal').style.display = 'none';
+}
+
+function filterCatalog(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+    renderCatalog();
+}
+
+function searchCatalog() {
+    renderCatalog();
+}
+
+function renderCatalog() {
+    const grid = document.getElementById('catalog-grid');
+    grid.innerHTML = '';
+    const query = document.getElementById('catalog-search-input').value.toLowerCase();
+    
+    let items = productDB.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(query);
+        const matchesCat = currentCategory === 'all' || p.cat === currentCategory;
+        return matchesSearch && matchesCat;
+    });
+
+    items.forEach(product => {
+        const div = document.createElement('div');
+        div.className = 'product-card';
+        if(selectedCatalogItems.includes(product)) div.classList.add('selected');
+        
+        let icon = "📦";
+        if(product.cat === 'Handy') icon = "📱";
+        if(product.cat === 'Gaming') icon = "🎮";
+        if(product.cat === 'Audio') icon = "🎧";
+        if(product.cat === 'Laptop') icon = "💻";
+        if(product.cat === 'Kamera') icon = "📷";
+        if(product.cat === 'Haushalt') icon = "🏠";
+
+        div.innerHTML = `<div class="pc-check"></div><div class="pc-icon">${icon}</div><div class="pc-name">${product.name}</div><div class="pc-price">${product.price} €</div>`;
+        div.onclick = () => toggleSelection(div, product);
+        grid.appendChild(div);
+    });
+}
+
+function toggleSelection(card, product) {
+    if(selectedCatalogItems.includes(product)) {
+        selectedCatalogItems = selectedCatalogItems.filter(p => p !== product);
+        card.classList.remove('selected');
+    } else {
+        selectedCatalogItems.push(product);
+        card.classList.add('selected');
+    }
+    updateFooterCount();
+}
+
+function updateFooterCount() {
+    document.getElementById('selected-count').innerText = `${selectedCatalogItems.length} Produkte gewählt`;
+}
+
+function addSelectedToCart() {
+    if(selectedCatalogItems.length === 0) return;
+    
+    if (catalogSource === 'home') {
+        // Add to Home Cart
+        selectedCatalogItems.forEach(p => {
+            addCartRow(p.name, p.price, 0);
+        });
+    } else {
+        // Add to List
+        if(!currentListId && myLists.length > 0) openList(myLists[0].id);
+        else if (myLists.length === 0) createNewList();
+
+        const list = myLists.find(l => l.id === currentListId);
+        selectedCatalogItems.forEach(p => {
+            list.items.push({ name: p.name, price: p.price, link: p.link });
+        });
+        saveLists();
+        renderListItems();
+        updateListCalculations();
+    }
+    
+    closeCatalogModal();
+}
+
+// --- WORKER FUNCTIONS ---
 function addManualItem() { addCartRow("Manuelles Produkt", 0, 0); }
 function addFromTicker(name, price) { switchTab('worker'); addCartRow(name, price, 0); }
 
@@ -117,7 +185,6 @@ function addCartRow(name, price, resell) {
     div.innerHTML = `<div class="input-with-label"><span class="input-label-tiny">Produkt</span><input type="text" class="cart-input cart-input-name" value="${name}"></div><div class="input-with-label"><span class="input-label-tiny">Preis</span><input type="number" class="cart-input cart-input-price" value="${price}" oninput="calcWorker()"></div><div class="input-with-label"><span class="input-label-tiny">Wiederverkauf</span><input type="number" class="cart-input cart-input-resell" value="${resell}" oninput="calcWorker()"></div><button class="btn-remove" onclick="removeCartRow('${rowId}')">×</button>`;
     document.getElementById('cart-list').appendChild(div);
     document.getElementById('cart-area').style.display = 'block';
-    if(searchInput) searchInput.value = ''; suggestionsBox.style.display = 'none'; 
     calcWorker();
 }
 
@@ -127,7 +194,6 @@ function removeCartRow(id) {
     calcWorker();
 }
 
-// --- WORKER CALCULATION ---
 function calcWorker() {
     const income = parseFloat(document.getElementById('w-income').value) || 0;
     const expenses = parseFloat(document.getElementById('w-expenses').value) || 0;
@@ -173,12 +239,12 @@ function checkFixCosts() {
     box.style.display = 'flex';
     const ratio = (exp/inc)*100;
     if(ratio > 50) { box.className='feedback-bad'; box.innerHTML='<span>⚠️ Fixkosten ' + ratio.toFixed(0) + '% (Ideal: <50%).</span>'; }
-    else { box.className='feedback-good'; box.innerHTML='<span>✅ Vorbildlich.</span>'; }
+    else { box.className='feedback-good'; box.innerHTML='<span>✅ Vorbildliche Fixkosten.</span>'; }
 }
 
 // --- DREAMER CALC ---
 function setDream(val) { document.getElementById('d-price').value = val; }
-function calcDream() { /* ... (Same logic as before, omitted for brevity, ensure you copy the loop from previous answer) ... */ 
+function calcDream() { 
     const currentPrice = parseFloat(document.getElementById('d-price').value) || 0;
     const years = parseInt(document.getElementById('d-years').value) || 5;
     const appreciation = parseFloat(document.getElementById('d-appreciation').value) || 0;
@@ -213,106 +279,6 @@ function calcDream() { /* ... (Same logic as before, omitted for brevity, ensure
     else analysisEl.innerHTML = `<strong>Knapp.</strong><br>Inflation frisst Rendite auf.`;
 }
 
-// --- CATALOG MODAL LOGIC (NEU) ---
-function openCatalogModal() {
-    document.getElementById('catalog-modal').style.display = 'flex';
-    selectedCatalogItems = [];
-    currentCategory = 'all';
-    document.getElementById('catalog-search-input').value = '';
-    renderCatalog();
-    updateFooterCount();
-}
-
-function closeCatalogModal() {
-    document.getElementById('catalog-modal').style.display = 'none';
-}
-
-function filterCatalog(cat, btn) {
-    currentCategory = cat;
-    document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
-    btn.classList.add('active');
-    renderCatalog();
-}
-
-function searchCatalog() {
-    renderCatalog();
-}
-
-function renderCatalog() {
-    const grid = document.getElementById('catalog-grid');
-    grid.innerHTML = '';
-    const query = document.getElementById('catalog-search-input').value.toLowerCase();
-    
-    // Filter
-    let items = productDB.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(query);
-        const matchesCat = currentCategory === 'all' || p.cat === currentCategory;
-        return matchesSearch && matchesCat;
-    });
-
-    items.forEach(product => {
-        const div = document.createElement('div');
-        div.className = 'product-card';
-        if(selectedCatalogItems.includes(product)) div.classList.add('selected');
-        
-        // Icons mapping
-        let icon = "📦";
-        if(product.cat === 'Handy') icon = "📱";
-        if(product.cat === 'Gaming') icon = "🎮";
-        if(product.cat === 'Audio') icon = "🎧";
-        if(product.cat === 'Laptop') icon = "💻";
-        if(product.cat === 'Kamera') icon = "📷";
-        if(product.cat === 'Haushalt') icon = "🏠";
-
-        div.innerHTML = `
-            <div class="pc-check"></div>
-            <div class="pc-icon">${icon}</div>
-            <div class="pc-name">${product.name}</div>
-            <div class="pc-price">${product.price} €</div>
-        `;
-        div.onclick = () => toggleSelection(div, product);
-        grid.appendChild(div);
-    });
-}
-
-function toggleSelection(card, product) {
-    if(selectedCatalogItems.includes(product)) {
-        selectedCatalogItems = selectedCatalogItems.filter(p => p !== product);
-        card.classList.remove('selected');
-    } else {
-        selectedCatalogItems.push(product);
-        card.classList.add('selected');
-    }
-    updateFooterCount();
-}
-
-function updateFooterCount() {
-    document.getElementById('selected-count').innerText = `${selectedCatalogItems.length} Produkte gewählt`;
-}
-
-function addSelectedToCart() {
-    if(selectedCatalogItems.length === 0) return;
-    
-    // Check if a list is open
-    if(!currentListId && myLists.length > 0) {
-        // Open first list if none selected
-        openList(myLists[0].id);
-    } else if (myLists.length === 0) {
-        createNewList(); // Force create if empty
-    }
-
-    const list = myLists.find(l => l.id === currentListId);
-    
-    selectedCatalogItems.forEach(p => {
-        list.items.push({ name: p.name, price: p.price, link: p.link });
-    });
-    
-    saveLists();
-    renderListItems();
-    updateListCalculations();
-    closeCatalogModal();
-}
-
 // --- LISTS LOGIC ---
 function createNewList() {
     const name = prompt("Name der neuen Liste:");
@@ -328,6 +294,7 @@ function saveLists() { localStorage.setItem('myLists', JSON.stringify(myLists));
 
 function renderListsNav() {
     const nav = document.getElementById('lists-nav');
+    if(!nav) return;
     nav.innerHTML = '';
     myLists.forEach(list => {
         const div = document.createElement('div');
@@ -347,7 +314,7 @@ function openList(id) {
     const list = myLists.find(l => l.id === id);
     document.getElementById('current-list-title').innerText = list.name;
     document.getElementById('list-saved').value = list.saved;
-    syncSalaryFromList(); // Load global salary to inputs
+    syncSalaryFromList(); 
     renderListItems();
     updateListCalculations();
 }
@@ -430,7 +397,7 @@ function updateListCalculations() {
     infoEl.innerText = `Basierend auf ${hourlyWage.toFixed(2)}€ Real-Stundenlohn`;
 }
 
-// --- SALARY CALC (Gleiche Logik wie vorhin, hier kompakt für Vollständigkeit) ---
+// --- SALARY CALC ---
 function toggleKvInput() {
     const type = document.getElementById('s-kv-type').value;
     const group = document.getElementById('kv-rate-group');
@@ -454,7 +421,6 @@ function calculateSalary() {
 
     let monthlyBrutto = (period === 'year') ? rawBrutto / 12 : rawBrutto;
     
-    // Sozial
     const baseKv = Math.min(monthlyBrutto, 5175);
     const baseRv = Math.min(monthlyBrutto, 7550);
     const rv = baseRv * 0.093;
@@ -466,7 +432,6 @@ function calculateSalary() {
     const pv = baseKv * pvRateAN;
     const socialTotal = rv + av + kv + pv;
 
-    // Tax
     let taxFactor = 1.0;
     if(taxClass === 3) taxFactor = 0.62; if(taxClass === 5) taxFactor = 1.75; if(taxClass === 6) taxFactor = 1.95; if(taxClass === 2) taxFactor = 0.95; 
     let taxable = Math.max(0, monthlyBrutto - socialTotal - 100); 
