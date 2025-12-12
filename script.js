@@ -1,37 +1,29 @@
-// --- STATE VARIABLES ---
-const productDB = [
-    { name: "iPhone 16", price: 949, cat: "Handy", link: "https://www.apple.com/de/iphone/" },
-    { name: "iPhone 16 Pro", price: 1199, cat: "Handy", link: "https://www.apple.com/de/iphone/" },
-    { name: "Samsung S24", price: 899, cat: "Handy", link: "https://www.samsung.com/de/smartphones/" },
-    { name: "Samsung S24 Ultra", price: 1449, cat: "Handy", link: "#" },
-    { name: "Google Pixel 8", price: 799, cat: "Handy", link: "#" },
-    { name: "PlayStation 5", price: 549, cat: "Gaming", link: "https://www.playstation.com/" },
-    { name: "Nintendo Switch", price: 349, cat: "Gaming", link: "https://www.nintendo.de/" },
-    { name: "Xbox Series X", price: 499, cat: "Gaming", link: "#" },
-    { name: "AirPods Pro", price: 279, cat: "Audio", link: "https://www.apple.com/de/airpods/" },
-    { name: "Sony WH-1000XM5", price: 349, cat: "Audio", link: "#" },
-    { name: "MacBook Air", price: 1299, cat: "Laptop", link: "https://www.apple.com/de/mac/" },
-    { name: "MacBook Pro 14", price: 1999, cat: "Laptop", link: "#" },
-    { name: "iPad Air", price: 699, cat: "Tablet", link: "https://www.apple.com/de/ipad/" },
-    { name: "GoPro Hero 12", price: 399, cat: "Kamera", link: "https://gopro.com/" },
-    { name: "Dyson V15", price: 699, cat: "Haushalt", link: "https://www.dyson.de/" },
-    { name: "Thermomix TM6", price: 1399, cat: "Haushalt", link: "#" }
-];
+// ==========================================
+// 1. STATE VARIABLES
+// ==========================================
+
+// HINWEIS: 'productDB' wird nun aus der Datei products.js geladen!
 
 let cartItemCount = 0;
 let salaryData = { month: {}, year: {} };
 let currentSalaryMode = 'month';
 let salaryChartInstance = null;
-let dreamChartInstance = null;
 let myLists = JSON.parse(localStorage.getItem('myLists')) || [];
 let currentListId = null;
+
+// Stats for Gamification
+let totalStats = JSON.parse(localStorage.getItem('totalStats')) || { money: 0, time: 0 };
+let currentCalcResult = { money: 0, hours: 0 };
 
 // Modal State
 let selectedCatalogItems = [];
 let currentCategory = 'all';
-let catalogSource = 'home'; // 'home' or 'list'
+let catalogSource = 'home'; 
 
-// --- INITIALIZATION ---
+// ==========================================
+// 2. INITIALISIERUNG
+// ==========================================
+
 window.onload = function() {
     const savedIncome = localStorage.getItem('income');
     const savedExpenses = localStorage.getItem('expenses');
@@ -45,6 +37,13 @@ window.onload = function() {
 
     checkFixCosts();
     renderListsNav();
+    updateStatsUI(); 
+    
+    // Check ob productDB geladen wurde
+    if (typeof productDB === 'undefined') {
+        console.error("Fehler: products.js wurde nicht geladen!");
+        alert("Datenbank Fehler: Bitte lade die Seite neu.");
+    }
 };
 
 function saveToLocal() {
@@ -56,6 +55,16 @@ function saveToLocal() {
     if(document.getElementById('list-expenses-input')) document.getElementById('list-expenses-input').value = exp;
 }
 
+// --- STATS LOGIC ---
+function updateStatsUI() {
+    if(document.getElementById('stat-money')) document.getElementById('stat-money').innerText = totalStats.money.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    if(document.getElementById('stat-time')) document.getElementById('stat-time').innerText = Math.round(totalStats.time) + ' Std';
+}
+
+function saveStats() {
+    localStorage.setItem('totalStats', JSON.stringify(totalStats));
+}
+
 // --- VIEW NAVIGATION ---
 function switchView(viewName, btn) {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -64,21 +73,9 @@ function switchView(viewName, btn) {
     document.getElementById('view-' + viewName).classList.add('active-view');
 }
 
-function switchTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    const btns = document.querySelectorAll('.tab-btn');
-    if(tabName === 'worker') btns[0].classList.add('active'); else btns[1].classList.add('active');
-    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabName).classList.add('active');
-    const sidebarBench = document.getElementById('sidebar-benchmark');
-    const sidebarChart = document.getElementById('sidebar-chart');
-    if(tabName === 'worker') { sidebarBench.style.display = 'flex'; sidebarChart.style.display = 'none'; }
-    else { sidebarBench.style.display = 'none'; sidebarChart.style.display = 'flex'; }
-}
-
-// --- CATALOG MODAL LOGIC (NEU & UNIFIED) ---
+// --- CATALOG MODAL LOGIC ---
 function openCatalogModal(source) {
-    catalogSource = source; // Save where we came from
+    catalogSource = source; 
     document.getElementById('catalog-modal').style.display = 'flex';
     selectedCatalogItems = [];
     currentCategory = 'all';
@@ -151,15 +148,10 @@ function addSelectedToCart() {
     if(selectedCatalogItems.length === 0) return;
     
     if (catalogSource === 'home') {
-        // Add to Home Cart
-        selectedCatalogItems.forEach(p => {
-            addCartRow(p.name, p.price, 0);
-        });
+        selectedCatalogItems.forEach(p => { addCartRow(p.name, p.price, 0); });
     } else {
-        // Add to List
         if(!currentListId && myLists.length > 0) openList(myLists[0].id);
         else if (myLists.length === 0) createNewList();
-
         const list = myLists.find(l => l.id === currentListId);
         selectedCatalogItems.forEach(p => {
             list.items.push({ name: p.name, price: p.price, link: p.link });
@@ -168,13 +160,11 @@ function addSelectedToCart() {
         renderListItems();
         updateListCalculations();
     }
-    
     closeCatalogModal();
 }
 
 // --- WORKER FUNCTIONS ---
 function addManualItem() { addCartRow("Manuelles Produkt", 0, 0); }
-function addFromTicker(name, price) { switchTab('worker'); addCartRow(name, price, 0); }
 
 function addCartRow(name, price, resell) {
     cartItemCount++;
@@ -205,6 +195,9 @@ function calcWorker() {
     const effective = Math.max(0, totalPrice - totalResell);
     document.getElementById('total-effective-display').innerText = effective.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
     
+    document.getElementById('detail-price').innerText = totalPrice.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
+    document.getElementById('detail-effective-footer').innerText = effective.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
+
     checkFixCosts();
     if(income <= 0) return;
     
@@ -212,22 +205,22 @@ function calcWorker() {
     document.getElementById('w-result-container').style.display = 'block';
     
     const hourly = disposable / 173.33;
+    let hours = 0;
+
     if(disposable <= 0) {
         document.getElementById('val-hours').innerText = "∞";
         document.getElementById('val-days').innerText = "∞";
-        document.getElementById('w-cpu-text').innerText = "Unbezahlbar";
     } else {
-        const hours = effective / hourly;
+        hours = effective / hourly;
         document.getElementById('val-wage-real').innerText = hourly.toFixed(2) + ' €';
         document.getElementById('val-hours').innerText = Math.round(hours);
         document.getElementById('val-days').innerText = (hours/8).toFixed(1);
-        
-        const years = parseFloat(document.getElementById('w-years').value) || 1;
-        const freq = parseFloat(document.getElementById('w-freq').value) || 1;
-        const cpu = effective / (years * freq);
-        document.getElementById('w-cpu-text').innerText = cpu.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
     }
     document.getElementById('val-wage-base').innerText = (income/173.33).toFixed(2) + ' €';
+
+    // Store for Decision
+    currentCalcResult.money = effective;
+    currentCalcResult.hours = (disposable > 0) ? hours : 0;
 }
 
 function checkFixCosts() {
@@ -242,42 +235,58 @@ function checkFixCosts() {
     else { box.className='feedback-good'; box.innerHTML='<span>✅ Vorbildliche Fixkosten.</span>'; }
 }
 
-// --- DREAMER CALC ---
-function setDream(val) { document.getElementById('d-price').value = val; }
-function calcDream() { 
-    const currentPrice = parseFloat(document.getElementById('d-price').value) || 0;
-    const years = parseInt(document.getElementById('d-years').value) || 5;
-    const appreciation = parseFloat(document.getElementById('d-appreciation').value) || 0;
-    if(currentPrice <= 0) return;
-    document.getElementById('d-result-container').style.display = 'block';
-    document.getElementById('chart-placeholder').style.display = 'none';
-    document.getElementById('dreamChart').style.display = 'block';
-    document.getElementById('chart-analysis').style.display = 'block';
-    const months = years * 12;
-    const monthlySave = currentPrice / months; 
-    document.getElementById('d-rate').innerText = monthlySave.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) + " / Mo";
-    const labels = []; const dataProduct = []; const dataETF = [];
-    let productVal = currentPrice; let etfVal = 0;
-    const annualInvest = monthlySave * 12; const etfRate = 0.07; let overtakeYear = -1;
-    for (let i = 0; i <= years; i++) {
-        labels.push("Jahr " + i);
-        productVal = currentPrice * Math.pow(1 + (appreciation/100), i);
-        dataProduct.push(productVal);
-        if(i === 0) etfVal = 0; else etfVal = (etfVal * (1 + etfRate)) + annualInvest;
-        dataETF.push(etfVal);
-        if(i > 0 && etfVal > productVal && overtakeYear === -1) overtakeYear = i;
+// --- DECISION LOGIC ---
+function decisionSave() {
+    if(currentCalcResult.money <= 0) { 
+        alert("Warenkorb ist leer."); 
+        return; 
     }
-    const ctx = document.getElementById('dreamChart').getContext('2d');
-    if(dreamChartInstance) dreamChartInstance.destroy();
-    dreamChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: { labels: labels, datasets: [{ label: 'Produkt Preis (Rot)', data: dataProduct, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.3, fill: false }, { label: 'ETF Depot (Grün)', data: dataETF, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.3, fill: true }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-    });
-    const analysisEl = document.getElementById('chart-analysis');
-    if(overtakeYear !== -1 && overtakeYear < years) analysisEl.innerHTML = `<strong style="color:var(--success)">Glückwunsch!</strong><br>Bereits im <strong>Jahr ${overtakeYear}</strong> schlägt dein Depot den Preis.`;
-    else analysisEl.innerHTML = `<strong>Knapp.</strong><br>Inflation frisst Rendite auf.`;
+    document.getElementById('confirm-modal').style.display = 'flex';
 }
+
+function closeConfirmModal() {
+    document.getElementById('confirm-modal').style.display = 'none';
+}
+
+function confirmAction() {
+    closeConfirmModal();
+    totalStats.money += currentCalcResult.money;
+    totalStats.time += currentCalcResult.hours;
+    saveStats();
+    updateStatsUI();
+
+    document.getElementById('cart-list').innerHTML = '';
+    document.getElementById('cart-area').style.display = 'none';
+    document.getElementById('w-result-container').style.display = 'none';
+    currentCalcResult = { money: 0, hours: 0 };
+}
+
+function decisionBuy() {
+    if(document.getElementById('cart-list').children.length === 0) { alert("Warenkorb leer."); return; }
+    openShopModal();
+}
+
+function openShopModal() {
+    const container = document.getElementById('shop-list-container');
+    container.innerHTML = '';
+    const cartRows = document.querySelectorAll('.cart-row');
+    cartRows.forEach(row => {
+        const name = row.querySelector('.cart-input-name').value;
+        const price = row.querySelector('.cart-input-price').value;
+        const product = productDB.find(p => p.name === name);
+        let link = (product && product.link) ? product.link : "https://www.amazon.de/s?k=" + encodeURIComponent(name);
+        let linkText = (product && product.link) ? "Zum Shop ↗" : "Suche auf Amazon 🔎";
+        
+        const div = document.createElement('div');
+        div.className = 'shop-link-row';
+        div.innerHTML = `<div><strong>${name}</strong><br><small>${price} €</small></div><a href="${link}" target="_blank" class="shop-btn-external">${linkText}</a>`;
+        container.appendChild(div);
+    });
+    document.getElementById('shop-modal').style.display = 'flex';
+}
+
+function closeShopModal() { document.getElementById('shop-modal').style.display = 'none'; }
+
 
 // --- LISTS LOGIC ---
 function createNewList() {
