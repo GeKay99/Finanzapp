@@ -2,8 +2,6 @@
 // 1. STATE VARIABLES
 // ==========================================
 
-// HINWEIS: 'productDB' wird nun aus der Datei products.js geladen!
-
 let cartItemCount = 0;
 let salaryData = { month: {}, year: {} };
 let currentSalaryMode = 'month';
@@ -38,8 +36,9 @@ window.onload = function() {
     checkFixCosts();
     renderListsNav();
     updateStatsUI(); 
+    checkEmptyCartState(); 
+    calcWorker(); // Initial einmal berechnen, falls Werte aus LocalStorage geladen wurden
     
-    // Check ob productDB geladen wurde
     if (typeof productDB === 'undefined') {
         console.error("Fehler: products.js wurde nicht geladen!");
         alert("Datenbank Fehler: Bitte lade die Seite neu.");
@@ -163,60 +162,125 @@ function addSelectedToCart() {
     closeCatalogModal();
 }
 
-// --- WORKER FUNCTIONS ---
+// --- WORKER FUNCTIONS (CART) ---
+
+function checkEmptyCartState() {
+    const list = document.getElementById('cart-list');
+    const summary = document.querySelector('.cart-summary');
+    const rows = list.querySelectorAll('.cart-row');
+    
+    if(rows.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div style="font-size: 2.5rem; opacity: 0.3; margin-bottom: 10px;">🛒</div>
+                <div style="font-weight: 600; color: var(--text-light);">Dein Warenkorb ist leer</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Füge Produkte hinzu, um zu starten.</div>
+            </div>
+        `;
+        summary.style.display = 'none';
+        
+    } else {
+        const es = list.querySelector('.empty-state');
+        if(es) es.remove();
+        summary.style.display = 'flex';
+    }
+    // Neuberechnung triggern, damit die wage-table sichtbar bleibt/wird
+    calcWorker();
+}
+
 function addManualItem() { addCartRow("Manuelles Produkt", 0, 0); }
 
 function addCartRow(name, price, resell) {
+    const list = document.getElementById('cart-list');
+    const emptyState = list.querySelector('.empty-state');
+    if(emptyState) list.innerHTML = '';
+
     cartItemCount++;
     const rowId = 'cart-item-' + cartItemCount;
     const div = document.createElement('div');
     div.className = 'cart-row';
     div.id = rowId;
     div.innerHTML = `<div class="input-with-label"><span class="input-label-tiny">Produkt</span><input type="text" class="cart-input cart-input-name" value="${name}"></div><div class="input-with-label"><span class="input-label-tiny">Preis</span><input type="number" class="cart-input cart-input-price" value="${price}" oninput="calcWorker()"></div><div class="input-with-label"><span class="input-label-tiny">Wiederverkauf</span><input type="number" class="cart-input cart-input-resell" value="${resell}" oninput="calcWorker()"></div><button class="btn-remove" onclick="removeCartRow('${rowId}')">×</button>`;
-    document.getElementById('cart-list').appendChild(div);
-    document.getElementById('cart-area').style.display = 'block';
+    list.appendChild(div);
+    
+    document.querySelector('.cart-summary').style.display = 'flex';
+    
     calcWorker();
 }
 
 function removeCartRow(id) {
     document.getElementById(id).remove();
-    if(document.getElementById('cart-list').children.length === 0) document.getElementById('cart-area').style.display = 'none';
-    calcWorker();
+    checkEmptyCartState();
+    // calcWorker wird bereits in checkEmptyCartState aufgerufen
 }
 
 function calcWorker() {
-    const income = parseFloat(document.getElementById('w-income').value) || 0;
-    const expenses = parseFloat(document.getElementById('w-expenses').value) || 0;
+    const income = parseFloat(document.getElementById('w-income').value);
+    const expenses = parseFloat(document.getElementById('w-expenses').value);
+    const resultContainer = document.getElementById('w-result-container');
+    
+    // 1. Zuerst prüfen, ob überhaupt ein Einkommen da ist.
+    if(isNaN(income) || income <= 0) {
+        resultContainer.style.display = 'none';
+        return;
+    }
+
+    // Einkommen da -> Container anzeigen
+    resultContainer.style.display = 'block';
+
+    // 2. Preise berechnen
     let totalPrice = 0; let totalResell = 0;
     document.querySelectorAll('.cart-input-price').forEach(i => totalPrice += parseFloat(i.value)||0);
     document.querySelectorAll('.cart-input-resell').forEach(i => totalResell += parseFloat(i.value)||0);
     
+    // Prüfen ob Produkte da sind (via Empty State Check oder Summe)
+    const list = document.getElementById('cart-list');
+    const hasProducts = !list.querySelector('.empty-state') && list.children.length > 0;
+
     document.getElementById('total-price-display').innerText = totalPrice.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
     const effective = Math.max(0, totalPrice - totalResell);
     document.getElementById('total-effective-display').innerText = effective.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
     
+    // 3. Stundenlohn berechnen (immer anzeigen wenn Income > 0)
+    // FIX: NaN/Undefined abfangen für Expenses
+    const safeExpenses = isNaN(expenses) ? 0 : expenses;
+
+    const disposable = Math.max(0, income - safeExpenses);
+    const hourly = disposable / 173.33;
+    
+    // FIX: Tausenderpunkte hinzufügen (toLocaleString)
+    document.getElementById('val-wage-base').innerText = (income/173.33).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    document.getElementById('val-wage-real').innerText = hourly.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    
+    // 4. Produkt-Details steuern (Hero Box, Decision Buttons)
+    const productDetails = resultContainer.querySelector('.product-calc-details');
+    
+    if(!hasProducts) {
+        // Nur Lohn anzeigen, Rest ausblenden
+        if(productDetails) productDetails.style.display = 'none';
+        
+        // Auch den Fixkosten-Check machen, aber ohne return
+        checkFixCosts();
+        return; 
+    } else {
+        // Alles anzeigen
+        if(productDetails) productDetails.style.display = 'block';
+    }
+
+    checkFixCosts();
+
     document.getElementById('detail-price').innerText = totalPrice.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
     document.getElementById('detail-effective-footer').innerText = effective.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
 
-    checkFixCosts();
-    if(income <= 0) return;
-    
-    const disposable = Math.max(0, income - expenses);
-    document.getElementById('w-result-container').style.display = 'block';
-    
-    const hourly = disposable / 173.33;
     let hours = 0;
-
     if(disposable <= 0) {
         document.getElementById('val-hours').innerText = "∞";
         document.getElementById('val-days').innerText = "∞";
     } else {
         hours = effective / hourly;
-        document.getElementById('val-wage-real').innerText = hourly.toFixed(2) + ' €';
         document.getElementById('val-hours').innerText = Math.round(hours);
         document.getElementById('val-days').innerText = (hours/8).toFixed(1);
     }
-    document.getElementById('val-wage-base').innerText = (income/173.33).toFixed(2) + ' €';
 
     // Store for Decision
     currentCalcResult.money = effective;
@@ -224,12 +288,20 @@ function calcWorker() {
 }
 
 function checkFixCosts() {
-    const inc = parseFloat(document.getElementById('w-income').value)||0;
-    const exp = parseFloat(document.getElementById('w-expenses').value)||0;
+    const inc = parseFloat(document.getElementById('w-income').value);
+    const exp = parseFloat(document.getElementById('w-expenses').value);
     const box = document.getElementById('fixcost-feedback');
+    
     if(!box) return;
-    if(inc <= 0 || exp <= 0) { box.style.display='none'; return; }
-    box.style.display = 'flex';
+
+    // FIX: Logik verbessert - verschwindet wenn inputs leer sind
+    if(isNaN(inc) || isNaN(exp) || inc <= 0 || exp <= 0) { 
+        box.style.display='none'; 
+        box.className = ''; // Klasse zurücksetzen
+        return; 
+    }
+    
+    box.style.display = 'block';
     const ratio = (exp/inc)*100;
     if(ratio > 50) { box.className='feedback-bad'; box.innerHTML='<span>⚠️ Fixkosten ' + ratio.toFixed(0) + '% (Ideal: <50%).</span>'; }
     else { box.className='feedback-good'; box.innerHTML='<span>✅ Vorbildliche Fixkosten.</span>'; }
@@ -248,21 +320,38 @@ function closeConfirmModal() {
     document.getElementById('confirm-modal').style.display = 'none';
 }
 
+function triggerConfetti() {
+    const duration = 2000;
+    if(typeof confetti === 'function') {
+        confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#22c55e', '#2563eb', '#facc15']
+        });
+    }
+}
+
 function confirmAction() {
     closeConfirmModal();
+    triggerConfetti(); 
+
     totalStats.money += currentCalcResult.money;
     totalStats.time += currentCalcResult.hours;
     saveStats();
     updateStatsUI();
 
     document.getElementById('cart-list').innerHTML = '';
-    document.getElementById('cart-area').style.display = 'none';
-    document.getElementById('w-result-container').style.display = 'none';
+    checkEmptyCartState(); // Reset auf Empty State
+    // calcWorker wird von checkEmptyCartState aufgerufen und versteckt dann die Produkt-Details
     currentCalcResult = { money: 0, hours: 0 };
 }
 
 function decisionBuy() {
     if(document.getElementById('cart-list').children.length === 0) { alert("Warenkorb leer."); return; }
+    const list = document.getElementById('cart-list');
+    if(list.querySelector('.empty-state')) { alert("Warenkorb leer."); return; }
+    
     openShopModal();
 }
 
@@ -493,4 +582,21 @@ function renderSalaryResult(mode) {
         data: { labels: ['Netto', 'Steuern', 'Sozialabgaben'], datasets: [{ data: [data.netto, data.taxSum, data.socialSum], backgroundColor: ['#22c55e', '#ef4444', '#f59e0b'], borderWidth: 0 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(context) { let val = context.raw.toLocaleString('de-DE', {minimumFractionDigits:2}); let percentage = ((context.raw / data.brutto) * 100).toFixed(1); return `${context.label}: ${val} € (${percentage}%)`; } } } } }
     });
+}
+
+// --- SMART SYNC FUNCTION (Neu) ---
+function transferSalary() {
+    // Hole das berechnete Netto (Monat)
+    if(!salaryData.month.netto) return alert("Bitte erst Gehalt berechnen!");
+    const netto = salaryData.month.netto;
+
+    // Setze es in die Eingabefelder (Worker & LocalStorage)
+    document.getElementById('w-income').value = netto.toFixed(2);
+    localStorage.setItem('income', netto.toFixed(2));
+    
+    // Wechsle zum Home View
+    switchView('home', document.querySelectorAll('.nav-btn')[0]);
+    
+    // Trigger Berechnung
+    calcWorker();
 }
