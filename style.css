@@ -16,6 +16,9 @@ nav { display: flex; gap: 15px; }
 .nav-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: white; }
 .nav-btn.active { background: white; color: var(--primary); font-weight: 700; border-color: white; }
 
+/* Mobile Menu Button (Standard unsichtbar) */
+.mobile-menu-btn { display: none; background: transparent; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
+
 /* LAYOUT */
 .main-container { flex: 1; padding: 0 20px 40px 20px; width: 100%; max-width: 1300px; margin: 0 auto; overflow: hidden; }
 .view-section { display: none; animation: fadeIn 0.4s ease; }
@@ -80,19 +83,13 @@ input:focus, select:focus { outline: none; border-color: var(--primary); backgro
 .gami-val.primary { color: var(--primary); }
 .gami-divider { height: 1px; background: var(--line-color); margin: 15px 0; }
 
-/* RESULTS - Fixkosten Feedback angepasst */
+/* RESULTS */
 #fixcost-feedback { 
-    margin-top: 8px; /* Etwas Abstand zum Input */
-    font-size: 0.75rem; 
-    padding: 8px 10px; 
-    /* Position Absolute entfernt, damit es den Button wegschiebt */
-    width: 100%; 
-    display: none; 
-    border-radius: 8px; 
+    margin-top: 8px; font-size: 0.75rem; padding: 8px 10px; 
+    width: 100%; display: none; border-radius: 8px; 
 }
 .feedback-good { background-color: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; display: block !important; }
 .feedback-bad { background-color: #fef2f2; color: var(--danger); border: 1px solid #fecaca; display: block !important; }
-
 .result-container { display: none; margin-top: 30px; border-top: 2px dashed var(--line-color); padding-top: 20px; }
 .wage-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
 .wage-table td { padding: 10px 0; font-size: 0.95rem; border-bottom: 1px solid var(--line-color); }
@@ -184,7 +181,9 @@ input:focus, select:focus { outline: none; border-color: var(--primary); backgro
 
 /* MODAL GLOBAL */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); animation: fadeIn 0.2s ease; }
+/* Modal Standard (Desktop) */
 .modal-window { background: white; width: 90%; max-width: 900px; height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+
 .modal-header { padding: 20px; border-bottom: 1px solid var(--line-color); display: flex; justify-content: space-between; align-items: center; }
 .modal-header h3 { margin: 0; color: var(--text-main); font-size: 1.2rem; }
 .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
@@ -194,7 +193,7 @@ input:focus, select:focus { outline: none; border-color: var(--primary); backgro
 .cat-item { padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-main); transition: all 0.2s; }
 .cat-item:hover { background: #e2e8f0; }
 .cat-item.active { background: var(--primary); color: white; font-weight: 600; }
-.modal-content { flex: 1; display: flex; flex-direction: column; padding: 20px; background: #fff; }
+.modal-content { flex: 1; display: flex; flex-direction: column; padding: 20px; background: #fff; overflow-y: auto; }
 .modal-search-bar { position: relative; margin-bottom: 20px; }
 .modal-search-bar input { width: 100%; padding: 12px 12px 12px 40px; border: 2px solid var(--line-color); border-radius: 10px; font-size: 1rem; }
 .modal-search-bar input:focus { border-color: var(--primary); outline: none; }
@@ -212,14 +211,6 @@ input:focus, select:focus { outline: none; border-color: var(--primary); backgro
 .btn-add-selected { background: var(--success); color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
 .btn-add-selected:hover { background: #16a34a; }
 
-/* Media Queries for Modal */
-@media (max-width: 700px) {
-    .modal-window { width: 100%; height: 100%; border-radius: 0; }
-    .modal-body { flex-direction: column; }
-    .modal-sidebar { width: 100%; height: 60px; flex-direction: row; overflow-x: auto; padding: 10px; border-right: none; border-bottom: 1px solid var(--line-color); }
-    .cat-item { white-space: nowrap; }
-}
-
 /* ADS & FOOTER */
 .ad-container { background: #e5e7eb; border: 1px dashed #9ca3af; display: flex; justify-content: center; align-items: center; color: #6b7280; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative; }
 .ad-container::after { content: "Anzeige / AdSpace"; }
@@ -231,8 +222,37 @@ footer { background-color: #1e293b; color: #cbd5e1; padding: 30px 20px; margin-t
 .footer-links a { color: #fff; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
 .copyright { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; }
 
+/* ---------------------------------------------------- */
+/* MOBILE OPTIMIERUNG (Responsive Fixes)                */
+/* ---------------------------------------------------- */
 @media (max-width: 800px) {
-    .page-grid, .salary-result-grid, .input-row-3, .lists-container { grid-template-columns: 1fr; }
+    /* Header Mobile Toggle */
+    .mobile-menu-btn { display: block; }
+    
+    nav {
+        display: none; /* Standard ausgeblendet */
+        flex-direction: column;
+        position: absolute;
+        top: 60px; /* Unter Header */
+        left: 0;
+        right: 0;
+        background: var(--primary);
+        padding: 10px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        z-index: 99;
+    }
+    nav.active { display: flex; }
+    
+    .nav-btn { width: 100%; margin-bottom: 5px; text-align: left; }
+
+    /* Layout Stack */
+    .page-grid, .salary-result-grid, .input-row-3, .lists-container, .input-row { 
+        grid-template-columns: 1fr; 
+        flex-direction: column; /* WICHTIG: Stapelt Inputs */
+    }
+    
+    .input-row > div { width: 100%; margin-bottom: 10px; }
+
     .scroll-container { height: 400px; }
     .cart-header, .cart-row { grid-template-columns: 1fr; gap: 5px; }
     .cart-row > * { width: 100%; }
@@ -241,4 +261,29 @@ footer { background-color: #1e293b; color: #cbd5e1; padding: 30px 20px; margin-t
     .stats-bar { gap: 15px; }
     .stat-value { font-size: 1.1rem; }
     .decision-buttons { grid-template-columns: 1fr; }
+    
+    /* MODAL FIXES FÜR MOBILE */
+    .modal-window {
+        width: 95%;
+        height: 90vh; /* Fast volle Höhe */
+        border-radius: 12px;
+    }
+    .modal-body {
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .modal-sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        overflow-x: auto; /* Horizontal scrollbar für Kategorien */
+        padding: 10px;
+        border-right: none;
+        border-bottom: 1px solid var(--line-color);
+        flex-shrink: 0; /* Verhindert Schrumpfen */
+    }
+    .cat-item { white-space: nowrap; margin-right: 5px; }
+    .modal-content {
+        overflow-y: auto; /* Scrollbar für Produkte */
+    }
 }

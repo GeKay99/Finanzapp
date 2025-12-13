@@ -19,10 +19,13 @@
             <span class="logo-icon">⏳</span>
             Nettozeit
         </div>
-        <nav>
-            <button class="nav-btn active" onclick="switchView('home', this)">Zeit-Rechner</button>
-            <button class="nav-btn" onclick="switchView('lists', this)">Spar-Ziele</button>
-            <button class="nav-btn" onclick="switchView('salary', this)">Brutto-Netto</button> 
+        
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+
+        <nav id="main-nav">
+            <button class="nav-btn active" onclick="switchView('home', this); toggleMobileMenu()">Zeit-Rechner</button>
+            <button class="nav-btn" onclick="switchView('lists', this); toggleMobileMenu()">Spar-Ziele</button>
+            <button class="nav-btn" onclick="switchView('salary', this); toggleMobileMenu()">Brutto-Netto</button> 
         </nav>
     </header>
 
@@ -325,7 +328,7 @@
     </div>
 
     <div id="shop-modal" class="modal-overlay">
-        <div class="modal-window" style="height: auto; max-height: 80vh;">
+        <div class="modal-window">
             <div class="modal-header">
                 <h3>🛍️ Deine Einkaufsliste</h3>
                 <button class="modal-close" onclick="closeShopModal()">×</button>
@@ -363,7 +366,12 @@
         <div class="footer-content">
             <div class="logo" style="color:white; font-size:1.2rem;">⏳ Nettozeit</div>
             <p class="copyright">&copy; 2024 Nettozeit. Dein Tool für finanzielle Klarheit.</p>
-            <div class="footer-links"><a href="#">Impressum</a><a href="#">Datenschutz</a><a href="#">Kontakt</a><a href="#">Über uns</a></div>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="datenschutz.html">Datenschutz</a>
+                <a href="#">Kontakt</a>
+                <a href="#">Über uns</a>
+            </div>
         </div>
     </footer>
 

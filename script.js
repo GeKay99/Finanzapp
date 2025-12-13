@@ -45,6 +45,12 @@ window.onload = function() {
     }
 };
 
+// --- MOBILE MENU TOGGLE ---
+function toggleMobileMenu() {
+    const nav = document.getElementById('main-nav');
+    nav.classList.toggle('active');
+}
+
 function saveToLocal() {
     const inc = document.getElementById('w-income').value;
     const exp = document.getElementById('w-expenses').value;
