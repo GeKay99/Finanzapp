@@ -52,20 +52,21 @@
                         <div class="worker-layout">
                             <div class="worker-inputs">
                                 <div class="input-row">
-<div class="input-group">
-    <label>
-        Netto-Monatslohn (€)
-        <div class="info-wrapper"> <span class="info-icon">i</span> <div class="tooltip-box tooltip-wide">
-                Du kennst deinen Netto-Lohn nicht?
-                <br><br>
-                <a href="#" onclick="switchView('salary', document.querySelector('#main-nav .nav-btn:nth-child(3)')); return false;" style="color:white; text-decoration:underline; font-weight:700; pointer-events: auto;">
-                    Klicke hier für den Brutto-Netto-Rechner.
-                </a>
-            </div>
-        </div>
-    </label>
-    <input type="number" id="w-income" placeholder="2500" oninput="calcWorker(); saveToLocal();">
-</div>
+                                    <div class="input-group">
+                                        <label>
+                                            Netto-Monatslohn (€)
+                                            <div class="info-wrapper" onclick="switchView('salary', document.querySelector('#main-nav .nav-btn:nth-child(3)'))" style="cursor: pointer;">
+                                                <span class="info-icon" style="background:var(--primary); color:white; border:1px solid white;">?</span>
+                                                <div class="tooltip-box tooltip-wide" style="pointer-events: auto;">
+                                                    Du kennst deinen Netto-Lohn nicht?
+                                                    <br><br>
+                                                    <strong>Klicke hier (oder auf das ?), um zum Brutto-Netto-Rechner zu wechseln!</strong>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <input type="number" id="w-income" placeholder="2500" oninput="calcWorker(); saveToLocal();">
+                                    </div>
+    
                                     <div class="input-group">
                                         <label>Fixkosten (€)</label>
                                         <input type="number" id="w-expenses" placeholder="1200" oninput="calcWorker(); saveToLocal();">
@@ -90,7 +91,7 @@
                             </table>
                         </div>
 
-                        <hr class="section-divider">
+                        <hr class="section-divider" style="border: 0; border-top: 1px solid var(--line-color); margin: 30px 0;">
 
                         <div class="product-section">
                             <h2 style="margin-top: 30px;">
