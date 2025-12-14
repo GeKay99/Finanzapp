@@ -35,9 +35,8 @@ window.onload = function() {
 
     checkFixCosts();
     renderListsNav();
-    // Stats UI Update nicht mehr im Home-Screen benötigt (da dort entfernt), aber für Modal wichtig
     checkEmptyCartState(); 
-    calcWorker(); // Initial einmal berechnen
+    calcWorker(); 
     
     if (typeof productDB === 'undefined') {
         console.error("Fehler: products.js wurde nicht geladen!");
@@ -216,22 +215,21 @@ function removeCartRow(id) {
 function calcWorker() {
     const income = parseFloat(document.getElementById('w-income').value);
     const expenses = parseFloat(document.getElementById('w-expenses').value);
-    const resultContainer = document.getElementById('w-result-container');
+    
+    const wageDisplay = document.getElementById('wage-display-area');
     
     if(isNaN(income) || income <= 0) {
-        resultContainer.style.display = 'none';
+        wageDisplay.style.display = 'none';
+        document.getElementById('time-result-container').style.display = 'none';
         return;
     }
 
-    resultContainer.style.display = 'block';
+    wageDisplay.style.display = 'block';
 
     let totalPrice = 0; let totalResell = 0;
     document.querySelectorAll('.cart-input-price').forEach(i => totalPrice += parseFloat(i.value)||0);
     document.querySelectorAll('.cart-input-resell').forEach(i => totalResell += parseFloat(i.value)||0);
     
-    const list = document.getElementById('cart-list');
-    const hasProducts = !list.querySelector('.empty-state') && list.children.length > 0;
-
     document.getElementById('total-price-display').innerText = totalPrice.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
     const effective = Math.max(0, totalPrice - totalResell);
     document.getElementById('total-effective-display').innerText = effective.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
@@ -243,14 +241,17 @@ function calcWorker() {
     document.getElementById('val-wage-base').innerText = (income/173.33).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     document.getElementById('val-wage-real').innerText = hourly.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     
-    const productDetails = resultContainer.querySelector('.product-calc-details');
+    const list = document.getElementById('cart-list');
+    const hasProducts = !list.querySelector('.empty-state') && list.children.length > 0;
     
+    const timeResult = document.getElementById('time-result-container');
+
     if(!hasProducts) {
-        if(productDetails) productDetails.style.display = 'none';
+        timeResult.style.display = 'none';
         checkFixCosts();
         return; 
     } else {
-        if(productDetails) productDetails.style.display = 'block';
+        timeResult.style.display = 'block';
     }
 
     checkFixCosts();
@@ -307,28 +308,23 @@ function closeConfirmModal() {
 function confirmAction() {
     closeConfirmModal();
     
-    // Save
     totalStats.money += currentCalcResult.money;
     totalStats.time += currentCalcResult.hours;
     saveStats();
     
-    // Show Success Modal
     showSuccessModal();
     
-    // Trigger Confetti
     if(typeof confetti === 'function') {
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#22c55e', '#2563eb', '#facc15'] });
     }
 
-    // Reset UI
     document.getElementById('cart-list').innerHTML = '';
     checkEmptyCartState(); 
     currentCalcResult = { money: 0, hours: 0 };
 }
 
 function showSuccessModal() {
-    // Populate Data
-    document.getElementById('success-saved-current').innerText = totalStats.money.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €'; // Hier könnte man auch currentCalcResult anzeigen, wenn man es VOR dem Reset speichert
+    document.getElementById('success-saved-current').innerText = currentCalcResult.money.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €'; 
     document.getElementById('success-total-money').innerText = totalStats.money.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €';
     document.getElementById('success-total-time').innerText = Math.round(totalStats.time) + ' Std Lebenszeit';
     
@@ -370,15 +366,9 @@ function closeShopModal() { document.getElementById('shop-modal').style.display 
 
 
 // --- LISTS LOGIC ---
-// --- LISTS LOGIC ---
-
-// ALT (Löschen): function createNewList() { ... prompt ... }
-
-// NEU: Modal öffnen
 function createNewList() {
-    document.getElementById('new-list-name').value = ''; // Input leeren
+    document.getElementById('new-list-name').value = '';
     document.getElementById('new-list-modal').style.display = 'flex';
-    // Fokus ins Feld setzen für bessere UX
     setTimeout(() => document.getElementById('new-list-name').focus(), 100);
 }
 
@@ -386,13 +376,17 @@ function closeNewListModal() {
     document.getElementById('new-list-modal').style.display = 'none';
 }
 
-// Die eigentliche Erstellung
 function saveNewListFromModal() {
     const nameInput = document.getElementById('new-list-name');
     const name = nameInput.value.trim();
     
+    nameInput.classList.remove('input-error');
+
     if(!name) {
-        alert("Bitte einen Namen eingeben.");
+        nameInput.classList.add('input-error');
+        nameInput.placeholder = "Bitte Namen eingeben!";
+        nameInput.focus();
+        setTimeout(() => nameInput.classList.remove('input-error'), 500);
         return;
     }
     
@@ -404,7 +398,6 @@ function saveNewListFromModal() {
     
     closeNewListModal();
 }
-
 
 function saveLists() { localStorage.setItem('myLists', JSON.stringify(myLists)); }
 
@@ -568,7 +561,9 @@ function calculateSalary() {
     salaryData.year = { brutto: monthlyBrutto * 12, tax: tax * 12, soliChurch: (soli + church) * 12, kv: kv * 12, pv: pv * 12, rv: rv * 12, av: av * 12, netto: netto * 12, realNetto: realNetto * 12, socialSum: socialTotal * 12, taxSum: taxTotal * 12 };
 
     document.getElementById('salary-result-wrapper').style.display = 'block';
-    renderSalaryResult(currentSalaryMode);
+    
+    // FIX: Setze die Ansicht basierend auf der Eingabe (period)
+    switchSalaryMode(period);
 }
 
 function switchSalaryMode(mode) {
