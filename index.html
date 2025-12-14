@@ -78,7 +78,6 @@
                         </div>
 
                         <div class="worker-layout">
-                            
                             <div class="worker-inputs">
                                 <div class="input-row">
                                     <div class="input-group">
@@ -95,26 +94,7 @@
 
                                 <button class="btn-calc" onclick="calcWorker()">Ergebnis aktualisieren</button>
                             </div>
-
-                            <div class="worker-stats">
-                                <div class="gamification-card">
-                                    <div class="gami-title">Dein Highscore</div>
-                                    
-                                    <div class="gami-item">
-                                        <span class="gami-label">Geld gespart</span>
-                                        <span class="gami-val success" id="stat-money">0,00 €</span>
-                                    </div>
-                                    
-                                    <div class="gami-divider"></div>
-                                    
-                                    <div class="gami-item">
-                                        <span class="gami-label">Lebenszeit gewonnen</span>
-                                        <span class="gami-val primary" id="stat-time">0 Std</span>
-                                    </div>
-                                </div>
                             </div>
-
-                        </div>
 
                         <div id="w-result-container" class="result-container">
                             <table class="wage-table">
@@ -328,7 +308,7 @@
     </div>
 
     <div id="shop-modal" class="modal-overlay">
-        <div class="modal-window">
+        <div class="modal-window" style="height: auto; max-height: 80vh;">
             <div class="modal-header">
                 <h3>🛍️ Deine Einkaufsliste</h3>
                 <button class="modal-close" onclick="closeShopModal()">×</button>
@@ -339,6 +319,23 @@
             </div>
             <div class="modal-footer" style="justify-content: flex-end;">
                 <button class="btn-add-selected" onclick="closeShopModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="new-list-modal" class="modal-overlay">
+        <div class="modal-window" style="height: auto; max-width: 400px;">
+            <div class="modal-header">
+                <h3>📝 Neue Liste erstellen</h3>
+                <button class="modal-close" onclick="closeNewListModal()">×</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; overflow: visible;">
+                <p style="margin-top:0; color:var(--text-light); margin-bottom:15px;">Wie soll dein Sparziel heißen?</p>
+                <input type="text" id="new-list-name" class="cart-input" placeholder="z.B. Urlaub 2025" style="width:100%; padding:12px; font-size:1rem;">
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
+                <button class="btn-add-manual" onclick="closeNewListModal()">Abbrechen</button>
+                <button class="btn-add-selected" onclick="saveNewListFromModal()">Erstellen</button>
             </div>
         </div>
     </div>
@@ -356,6 +353,26 @@
                     <button class="btn-add-selected" style="background: var(--line-color); color: var(--text-main); flex: 1;" onclick="closeConfirmModal()">Abbrechen</button>
                     <button class="btn-add-selected" style="flex: 1;" onclick="confirmAction()">Ja, sparen!</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-modal" class="modal-overlay">
+        <div class="modal-window" style="height: auto; max-width: 450px; text-align: center;">
+            <div class="modal-body" style="padding: 30px; flex-direction: column; align-items: center; background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);">
+                <div style="font-size: 4rem; margin-bottom: 10px;">🎉</div>
+                <h3 style="margin: 0; color: var(--success); font-size: 1.8rem;">Glückwunsch!</h3>
+                <p style="color: var(--text-main); font-size: 1.1rem; margin: 10px 0;">
+                    Du hast gerade <strong id="success-saved-current" style="color: var(--success);">0 €</strong> gespart!
+                </p>
+                
+                <div style="background: white; border: 2px solid #bbf7d0; border-radius: 12px; padding: 15px; width: 100%; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-light); font-weight: 700; margin-bottom: 5px;">Dein Neuer Highscore</div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);" id="success-total-money">0 €</div>
+                    <div style="font-size: 1rem; color: var(--primary); font-weight: 600;" id="success-total-time">0 Std Lebenszeit</div>
+                </div>
+
+                <button class="btn-add-selected" style="width: 100%; padding: 15px; font-size: 1.1rem;" onclick="closeSuccessModal()">Weiter so!</button>
             </div>
         </div>
     </div>

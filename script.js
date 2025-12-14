@@ -35,9 +35,9 @@ window.onload = function() {
 
     checkFixCosts();
     renderListsNav();
-    updateStatsUI(); 
+    // Stats UI Update nicht mehr im Home-Screen benötigt (da dort entfernt), aber für Modal wichtig
     checkEmptyCartState(); 
-    calcWorker(); // Initial einmal berechnen, falls Werte aus LocalStorage geladen wurden
+    calcWorker(); // Initial einmal berechnen
     
     if (typeof productDB === 'undefined') {
         console.error("Fehler: products.js wurde nicht geladen!");
@@ -58,12 +58,6 @@ function saveToLocal() {
     localStorage.setItem('expenses', exp);
     if(document.getElementById('list-income-input')) document.getElementById('list-income-input').value = inc;
     if(document.getElementById('list-expenses-input')) document.getElementById('list-expenses-input').value = exp;
-}
-
-// --- STATS LOGIC ---
-function updateStatsUI() {
-    if(document.getElementById('stat-money')) document.getElementById('stat-money').innerText = totalStats.money.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
-    if(document.getElementById('stat-time')) document.getElementById('stat-time').innerText = Math.round(totalStats.time) + ' Std';
 }
 
 function saveStats() {
@@ -190,7 +184,7 @@ function checkEmptyCartState() {
         if(es) es.remove();
         summary.style.display = 'flex';
     }
-    // Neuberechnung triggern, damit die wage-table sichtbar bleibt/wird
+    // Neuberechnung triggern
     calcWorker();
 }
 
@@ -217,7 +211,6 @@ function addCartRow(name, price, resell) {
 function removeCartRow(id) {
     document.getElementById(id).remove();
     checkEmptyCartState();
-    // calcWorker wird bereits in checkEmptyCartState aufgerufen
 }
 
 function calcWorker() {
@@ -225,21 +218,17 @@ function calcWorker() {
     const expenses = parseFloat(document.getElementById('w-expenses').value);
     const resultContainer = document.getElementById('w-result-container');
     
-    // 1. Zuerst prüfen, ob überhaupt ein Einkommen da ist.
     if(isNaN(income) || income <= 0) {
         resultContainer.style.display = 'none';
         return;
     }
 
-    // Einkommen da -> Container anzeigen
     resultContainer.style.display = 'block';
 
-    // 2. Preise berechnen
     let totalPrice = 0; let totalResell = 0;
     document.querySelectorAll('.cart-input-price').forEach(i => totalPrice += parseFloat(i.value)||0);
     document.querySelectorAll('.cart-input-resell').forEach(i => totalResell += parseFloat(i.value)||0);
     
-    // Prüfen ob Produkte da sind (via Empty State Check oder Summe)
     const list = document.getElementById('cart-list');
     const hasProducts = !list.querySelector('.empty-state') && list.children.length > 0;
 
@@ -247,29 +236,20 @@ function calcWorker() {
     const effective = Math.max(0, totalPrice - totalResell);
     document.getElementById('total-effective-display').innerText = effective.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
     
-    // 3. Stundenlohn berechnen (immer anzeigen wenn Income > 0)
-    // FIX: NaN/Undefined abfangen für Expenses
     const safeExpenses = isNaN(expenses) ? 0 : expenses;
-
     const disposable = Math.max(0, income - safeExpenses);
     const hourly = disposable / 173.33;
     
-    // FIX: Tausenderpunkte hinzufügen (toLocaleString)
     document.getElementById('val-wage-base').innerText = (income/173.33).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     document.getElementById('val-wage-real').innerText = hourly.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     
-    // 4. Produkt-Details steuern (Hero Box, Decision Buttons)
     const productDetails = resultContainer.querySelector('.product-calc-details');
     
     if(!hasProducts) {
-        // Nur Lohn anzeigen, Rest ausblenden
         if(productDetails) productDetails.style.display = 'none';
-        
-        // Auch den Fixkosten-Check machen, aber ohne return
         checkFixCosts();
         return; 
     } else {
-        // Alles anzeigen
         if(productDetails) productDetails.style.display = 'block';
     }
 
@@ -288,7 +268,6 @@ function calcWorker() {
         document.getElementById('val-days').innerText = (hours/8).toFixed(1);
     }
 
-    // Store for Decision
     currentCalcResult.money = effective;
     currentCalcResult.hours = (disposable > 0) ? hours : 0;
 }
@@ -300,10 +279,9 @@ function checkFixCosts() {
     
     if(!box) return;
 
-    // FIX: Logik verbessert - verschwindet wenn inputs leer sind
     if(isNaN(inc) || isNaN(exp) || inc <= 0 || exp <= 0) { 
         box.style.display='none'; 
-        box.className = ''; // Klasse zurücksetzen
+        box.className = ''; 
         return; 
     }
     
@@ -313,7 +291,7 @@ function checkFixCosts() {
     else { box.className='feedback-good'; box.innerHTML='<span>✅ Vorbildliche Fixkosten.</span>'; }
 }
 
-// --- DECISION LOGIC ---
+// --- DECISION & SUCCESS LOGIC ---
 function decisionSave() {
     if(currentCalcResult.money <= 0) { 
         alert("Warenkorb ist leer."); 
@@ -326,31 +304,39 @@ function closeConfirmModal() {
     document.getElementById('confirm-modal').style.display = 'none';
 }
 
-function triggerConfetti() {
-    const duration = 2000;
-    if(typeof confetti === 'function') {
-        confetti({
-            particleCount: 150,
-            spread: 80,
-            origin: { y: 0.6 },
-            colors: ['#22c55e', '#2563eb', '#facc15']
-        });
-    }
-}
-
 function confirmAction() {
     closeConfirmModal();
-    triggerConfetti(); 
-
+    
+    // Save
     totalStats.money += currentCalcResult.money;
     totalStats.time += currentCalcResult.hours;
     saveStats();
-    updateStatsUI();
+    
+    // Show Success Modal
+    showSuccessModal();
+    
+    // Trigger Confetti
+    if(typeof confetti === 'function') {
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#22c55e', '#2563eb', '#facc15'] });
+    }
 
+    // Reset UI
     document.getElementById('cart-list').innerHTML = '';
-    checkEmptyCartState(); // Reset auf Empty State
-    // calcWorker wird von checkEmptyCartState aufgerufen und versteckt dann die Produkt-Details
+    checkEmptyCartState(); 
     currentCalcResult = { money: 0, hours: 0 };
+}
+
+function showSuccessModal() {
+    // Populate Data
+    document.getElementById('success-saved-current').innerText = totalStats.money.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €'; // Hier könnte man auch currentCalcResult anzeigen, wenn man es VOR dem Reset speichert
+    document.getElementById('success-total-money').innerText = totalStats.money.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €';
+    document.getElementById('success-total-time').innerText = Math.round(totalStats.time) + ' Std Lebenszeit';
+    
+    document.getElementById('success-modal').style.display = 'flex';
+}
+
+function closeSuccessModal() {
+    document.getElementById('success-modal').style.display = 'none';
 }
 
 function decisionBuy() {
@@ -384,15 +370,41 @@ function closeShopModal() { document.getElementById('shop-modal').style.display 
 
 
 // --- LISTS LOGIC ---
+// --- LISTS LOGIC ---
+
+// ALT (Löschen): function createNewList() { ... prompt ... }
+
+// NEU: Modal öffnen
 function createNewList() {
-    const name = prompt("Name der neuen Liste:");
-    if(!name) return;
+    document.getElementById('new-list-name').value = ''; // Input leeren
+    document.getElementById('new-list-modal').style.display = 'flex';
+    // Fokus ins Feld setzen für bessere UX
+    setTimeout(() => document.getElementById('new-list-name').focus(), 100);
+}
+
+function closeNewListModal() {
+    document.getElementById('new-list-modal').style.display = 'none';
+}
+
+// Die eigentliche Erstellung
+function saveNewListFromModal() {
+    const nameInput = document.getElementById('new-list-name');
+    const name = nameInput.value.trim();
+    
+    if(!name) {
+        alert("Bitte einen Namen eingeben.");
+        return;
+    }
+    
     const newList = { id: Date.now(), name: name, saved: 0, items: [] };
     myLists.push(newList);
     saveLists();
     renderListsNav();
     openList(newList.id);
+    
+    closeNewListModal();
 }
+
 
 function saveLists() { localStorage.setItem('myLists', JSON.stringify(myLists)); }
 
