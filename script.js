@@ -113,15 +113,40 @@ function renderCatalog() {
         div.className = 'product-card';
         if(selectedCatalogItems.includes(product)) div.classList.add('selected');
         
+        // Helper für das Icon (wird 2x gebraucht: als Fallback und als Standard)
         let icon = "📦";
         if(product.cat === 'Handy') icon = "📱";
         if(product.cat === 'Gaming') icon = "🎮";
         if(product.cat === 'Audio') icon = "🎧";
         if(product.cat === 'Laptop') icon = "💻";
+        if(product.cat === 'Tablet') icon = "📟";
         if(product.cat === 'Kamera') icon = "📷";
         if(product.cat === 'Haushalt') icon = "🏠";
 
-        div.innerHTML = `<div class="pc-check"></div><div class="pc-icon">${icon}</div><div class="pc-name">${product.name}</div><div class="pc-price">${product.price} €</div>`;
+        let visualContent;
+        
+        if (product.img) {
+            // VERBESSERUNG: onerror Event. 
+            // Wenn das Bild nicht lädt (Fehler), verstecke das Bild und zeige das Icon an.
+            visualContent = `
+                <img src="${product.img}" 
+                     alt="${product.name}" 
+                     class="pc-image" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="pc-icon" style="display:none; font-size: 2.5rem; margin-bottom: 10px;">${icon}</div>
+            `;
+        } else {
+            // Kein Bild definiert -> Nur Icon
+            visualContent = `<div class="pc-icon">${icon}</div>`;
+        }
+
+        div.innerHTML = `
+            <div class="pc-check"></div>
+            ${visualContent}
+            <div class="pc-name">${product.name}</div>
+            <div class="pc-price">${product.price.toLocaleString('de-DE', {minimumFractionDigits:2})} €</div>
+        `;
+        
         div.onclick = () => toggleSelection(div, product);
         grid.appendChild(div);
     });
