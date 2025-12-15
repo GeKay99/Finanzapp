@@ -333,8 +333,8 @@
                 <h3>🛍️ Deine Einkaufsliste</h3>
                 <button class="modal-close" onclick="closeShopModal()">×</button>
             </div>
-            <div class="modal-body" style="padding: 20px; overflow-y: auto;">
-                <p style="margin-top:0; color:#64748b;">Hier sind die Links zu deinen ausgewählten Produkten:</p>
+            <div class="modal-body" style="padding: 20px; overflow-y: auto; flex-direction: column;">
+                <p style="margin-top:0; color:#64748b; margin-bottom: 20px;">Hier sind die Links zu deinen ausgewählten Produkten:</p>
                 <div id="shop-list-container" style="display:flex; flex-direction:column; gap:10px;"></div>
             </div>
             <div class="modal-footer" style="justify-content: flex-end;">
@@ -393,6 +393,22 @@
             <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
                 <button class="btn-add-manual" onclick="closeNewListModal()">Abbrechen</button>
                 <button class="btn-add-selected" onclick="saveNewListFromModal()">Erstellen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-list-modal" class="modal-overlay">
+        <div class="modal-window" style="height: auto; max-width: 400px; text-align: center;">
+            <div class="modal-body" style="padding: 30px; flex-direction: column; align-items: center;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🗑️</div>
+                <h3 style="margin-top: 0; color: var(--text-main);">Liste löschen?</h3>
+                <p style="color: var(--text-light); margin-bottom: 25px;">
+                    Möchtest du diese Liste wirklich unwiderruflich löschen?
+                </p>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button class="btn-add-manual" style="flex: 1;" onclick="closeDeleteListModal()">Abbrechen</button>
+                    <button class="btn-add-selected" style="background: var(--danger); flex: 1;" onclick="confirmDeleteList()">Löschen</button>
+                </div>
             </div>
         </div>
     </div>

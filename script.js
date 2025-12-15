@@ -199,7 +199,9 @@ function addCartRow(name, price, resell) {
     const div = document.createElement('div');
     div.className = 'cart-row';
     div.id = rowId;
-    div.innerHTML = `<div class="input-with-label"><span class="input-label-tiny">Produkt</span><input type="text" class="cart-input cart-input-name" value="${name}"></div><div class="input-with-label"><span class="input-label-tiny">Preis</span><input type="number" class="cart-input cart-input-price" value="${price}" oninput="calcWorker()"></div><div class="input-with-label"><span class="input-label-tiny">Wiederverkauf</span><input type="number" class="cart-input cart-input-resell" value="${resell}" oninput="calcWorker()"></div><button class="btn-remove" onclick="removeCartRow('${rowId}')">×</button>`;
+    
+    // FIX: onfocus to clear "Manuelles Produkt"
+    div.innerHTML = `<div class="input-with-label"><span class="input-label-tiny">Produkt</span><input type="text" class="cart-input cart-input-name" value="${name}" onfocus="if(this.value==='Manuelles Produkt') this.value=''"></div><div class="input-with-label"><span class="input-label-tiny">Preis</span><input type="number" class="cart-input cart-input-price" value="${price}" oninput="calcWorker()"></div><div class="input-with-label"><span class="input-label-tiny">Wiederverkauf</span><input type="number" class="cart-input cart-input-resell" value="${resell}" oninput="calcWorker()"></div><button class="btn-remove" onclick="removeCartRow('${rowId}')">×</button>`;
     list.appendChild(div);
     
     document.querySelector('.cart-summary').style.display = 'flex';
@@ -215,7 +217,6 @@ function removeCartRow(id) {
 function calcWorker() {
     const income = parseFloat(document.getElementById('w-income').value);
     const expenses = parseFloat(document.getElementById('w-expenses').value);
-    
     const wageDisplay = document.getElementById('wage-display-area');
     
     if(isNaN(income) || income <= 0) {
@@ -428,14 +429,23 @@ function openList(id) {
     updateListCalculations();
 }
 
+// FIX: New function for Delete Modal
 function deleteCurrentList() {
-    if(!confirm("Löschen?")) return;
+    document.getElementById('delete-list-modal').style.display = 'flex';
+}
+
+function closeDeleteListModal() {
+    document.getElementById('delete-list-modal').style.display = 'none';
+}
+
+function confirmDeleteList() {
     myLists = myLists.filter(l => l.id !== currentListId);
     saveLists();
     currentListId = null;
     document.getElementById('no-list-selected').style.display = 'block';
     document.getElementById('active-list-view').style.display = 'none';
     renderListsNav();
+    closeDeleteListModal();
 }
 
 function addListManualItem() {
@@ -454,18 +464,47 @@ function deleteListItem(index) {
     updateListCalculations();
 }
 
+// FIX: Render as Inputs
 function renderListItems() {
     const container = document.getElementById('list-items-container');
     container.innerHTML = '';
     const list = myLists.find(l => l.id === currentListId);
+    
     list.items.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'list-item-row';
         let linkHtml = '';
         if(item.link && item.link !== "#") linkHtml = `<a href="${item.link}" target="_blank" class="btn-link">Shop ↗</a>`;
-        div.innerHTML = `<span>${item.name}</span><div style="display:flex;align-items:center;gap:10px;">${linkHtml}<strong>${item.price.toFixed(2)} €</strong><button class="btn-remove" onclick="deleteListItem(${index})">×</button></div>`;
+        
+        // Input fields with auto-clear and oninput listeners
+        div.innerHTML = `
+            <input type="text" class="cart-input" value="${item.name}" 
+                   onfocus="if(this.value==='Manuelles Produkt') this.value=''" 
+                   oninput="updateListItem(${index}, 'name', this.value)" 
+                   style="flex:1; margin-right:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                ${linkHtml}
+                <input type="number" class="cart-input" value="${item.price}" 
+                       oninput="updateListItem(${index}, 'price', this.value)" 
+                       style="width:80px; text-align:right;">
+                <span style="font-weight:700;">€</span>
+                <button class="btn-remove" onclick="deleteListItem(${index})">×</button>
+            </div>
+        `;
         container.appendChild(div);
     });
+}
+
+// FIX: Update function for inputs
+function updateListItem(index, field, value) {
+    const list = myLists.find(l => l.id === currentListId);
+    if(field === 'price') {
+        list.items[index][field] = parseFloat(value) || 0;
+    } else {
+        list.items[index][field] = value;
+    }
+    saveLists();
+    updateListCalculations();
 }
 
 function syncSalaryFromList() {
@@ -562,7 +601,6 @@ function calculateSalary() {
 
     document.getElementById('salary-result-wrapper').style.display = 'block';
     
-    // FIX: Setze die Ansicht basierend auf der Eingabe (period)
     switchSalaryMode(period);
 }
 
