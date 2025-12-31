@@ -1,0 +1,53 @@
+<div class="salary-container">
+    <h2>💶 Brutto-Netto Rechner <span style="font-size:0.8rem; color:#64748b; margin-left:10px; font-weight:400;"></span></h2>
+    <p class="desc">Detaillierte Berechnung inkl. Krankenkassen-Zusatzbeitrag und Bundesland-Faktoren.</p>
+    <div class="input-row">
+        <div class="input-group">
+            <label>Brutto-Einkommen & Jahr</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" inputmode="decimal" id="s-brutto" placeholder="50000" style="flex:2;" oninput="formatCurrencyInput(this);">
+                <select id="s-period" style="width:100px; flex:1;">
+                    <option value="year" selected>Jährlich</option>
+                    <option value="month">Monatlich</option>
+                </select>
+                <select id="s-year" style="width:90px; flex:1;" onchange="calculateSalary()">
+                    <option value="2024">2024</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Steuerklasse<div class="info-wrapper"><span class="info-icon">i</span><div class="tooltip-box tooltip-wide"><ul class="tooltip-list"><li><strong>Kl. 1:</strong> Ledig, Geschieden, Verwitwet</li><li><strong>Kl. 2:</strong> Alleinerziehend (mit Entlastung)</li><li><strong>Kl. 3:</strong> Verheiratet (Verdiener > Partner)</li><li><strong>Kl. 4:</strong> Verheiratet (ähnlicher Verdienst)</li><li><strong>Kl. 5:</strong> Verheiratet (Verdiener < Partner)</li><li><strong>Kl. 6:</strong> Zweiter Job / Nebenjob</li></ul></div></div></label>
+            <select id="s-class"><option value="1" selected>Klasse 1</option><option value="2">Klasse 2</option><option value="3">Klasse 3</option><option value="4">Klasse 4</option><option value="5">Klasse 5</option><option value="6">Klasse 6</option></select>
+        </div>
+    </div>
+    <div class="input-row-3">
+        <div class="input-group"><label>Bundesland</label><select id="s-state"><option value="bw">Baden-Württemberg</option><option value="by">Bayern</option><option value="be">Berlin</option><option value="bb">Brandenburg</option><option value="hb">Bremen</option><option value="hh">Hamburg</option><option value="he">Hessen</option><option value="mv">Mecklenburg-Vorpommern</option><option value="ni">Niedersachsen</option><option value="nw">Nordrhein-Westfalen</option><option value="rp">Rheinland-Pfalz</option><option value="sl">Saarland</option><option value="sn">Sachsen</option><option value="st">Sachsen-Anhalt</option><option value="sh">Schleswig-Holstein</option><option value="th">Thüringen</option></select></div>
+        <div class="input-group"><label>Alter (Jahre)</label><input type="text" inputmode="decimal" id="s-age" value="30" oninput="formatCurrencyInput(this);"></div>
+        <div class="input-group"><label>Kinderfreibeträge<div class="info-wrapper"><span class="info-icon">i</span><div class="tooltip-box">Freibeträge für Kinder (0.5 pro Elternteil).</div></div></label><select id="s-kids"><option value="0">Keine</option><option value="0.5">0.5</option><option value="1">1.0</option><option value="1.5">1.5</option><option value="2">2.0+</option></select></div>
+    </div>
+    <div class="input-row-3">
+        <div class="input-group"><label>Kirchensteuer</label><select id="s-church"><option value="0">Nein</option><option value="1">Ja</option></select></div>
+        <div class="input-group"><label>Versicherung</label><select id="s-kv-type" onchange="toggleKvInput()"><option value="gkv">Gesetzlich (Pflicht)</option><option value="pkv">Privat versichert</option></select></div>
+        <div class="input-group" id="kv-rate-group"><label>KV-Zusatz %<div class="info-wrapper"><span class="info-icon">i</span><div class="tooltip-box">Individueller Zusatzbeitrag deiner Krankenkasse (2024 Ø 1,7%).</div></div></label><input type="text" inputmode="decimal" id="s-kv-add" value="1.7" step="0.1" oninput="formatCurrencyInput(this);"></div>
+    </div>
+    <div class="input-group" style="margin-top:20px; border-top:1px dashed #e2e8f0; padding-top:15px;"><label>Fixkosten (Monatlich)<span style="font-weight:400; color:#64748b; font-size:0.8rem; margin-left:5px;">(Optional)</span></label><input type="text" inputmode="decimal" id="s-fixcosts" placeholder="z.B. 1200 für Miete etc." oninput="formatCurrencyInput(this);"></div>
+    <button class="btn-calc" onclick="calculateSalary()">Gehalt Berechnen</button>
+    
+    <div id="salary-result-wrapper" class="salary-result-wrapper" style="display:none;">
+        <div class="toggle-container">
+            <button class="toggle-btn active-mode" id="btn-mode-month" onclick="switchSalaryMode('month')">Monatlich</button>
+            <button class="toggle-btn" id="btn-mode-year" onclick="switchSalaryMode('year')">Jährlich</button>
+        </div>
+        <div class="salary-result-grid">
+            <div><table class="salary-table" id="salary-table"></table></div>
+            <div class="salary-chart-wrap"><canvas id="salaryChart"></canvas></div>
+        </div>
+        
+        <div class="salary-transfer-box">
+             <button class="btn-transfer" onclick="transferSalary()">⬇️ Dieses Netto für Zeit-Rechner übernehmen</button>
+        </div>
+    </div>
+</div>

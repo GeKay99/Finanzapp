@@ -1,0 +1,159 @@
+<div class="page-grid">
+                
+    <div class="main-wrapper">
+        
+        <div id="worker" class="content-section active" style="display:block;">
+            
+            <h2>
+                Dein Finanz-Status
+                <div class="info-wrapper">
+                    <span class="info-icon">i</span>
+                    <div class="tooltip-box">Gib hier dein Einkommen ein, um deinen echten Stundenlohn zu berechnen.</div>
+                </div>
+            </h2>
+            <p class="desc">Wie viel ist deine Zeit wirklich wert?</p>
+
+            <div class="worker-layout">
+                <div class="worker-inputs">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>
+                                Netto-Monatslohn (€)
+                                <div class="info-wrapper" onclick="switchView('salary', document.querySelector('#main-nav .nav-btn:nth-child(3)'))" style="cursor: pointer;">
+                                    <span class="info-icon" style="background:var(--primary); color:white; border:1px solid white;">?</span>
+                                    <div class="tooltip-box tooltip-wide" style="pointer-events: auto;">
+                                        Du kennst deinen Netto-Lohn nicht?
+                                        <br><br>
+                                        <strong>Klicke hier (oder auf das ?), um zum Brutto-Netto-Rechner zu wechseln!</strong>
+                                    </div>
+                                </div>
+                            </label>
+                            <input type="text" inputmode="decimal" id="w-income" placeholder="2500" oninput="formatCurrencyInput(this); calcWorker(); saveToLocal();">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Fixkosten (€)</label>
+                            <input type="text" inputmode="decimal" id="w-expenses" placeholder="1200" oninput="formatCurrencyInput(this); calcWorker(); saveToLocal();">
+                            <div id="fixcost-feedback"></div>
+                        </div>
+                    </div>
+
+                    <button class="btn-calc" onclick="calcWorker()">Werte aktualisieren</button>
+                </div>
+            </div>
+
+            <div id="wage-display-area" style="display:none; margin-top: 20px; margin-bottom: 40px;">
+                <table class="wage-table">
+                    <tr>
+                        <td class="wage-label">Dein Netto-Stundenlohn:</td>
+                        <td class="wage-val" id="val-wage-base">0,00 €</td>
+                    </tr>
+                    <tr>
+                        <td class="wage-label">Nach Fixkosten (Real):</td>
+                        <td class="wage-val signal-red" id="val-wage-real">0,00 €</td>
+                    </tr>
+                </table>
+            </div>
+
+            <hr class="section-divider" style="border: 0; border-top: 1px solid var(--line-color); margin: 30px 0;">
+
+            <div class="product-section">
+                <h2 style="margin-top: 30px;">
+                    Willst du wissen wie lange du für ein Produkt arbeiten musst ?
+                </h2>
+                <p class="desc">Füge Produkte hinzu und sieh sofort das Ergebnis.</p>
+
+                <div class="search-container">
+                    <div class="search-input-wrapper" onclick="openCatalogModal('home')" style="cursor: pointer;">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="product-search" class="search-input" placeholder="Produkte suchen & hinzufügen..." readonly style="cursor: pointer;">
+                    </div>
+                    <button class="btn-add-manual" onclick="addManualItem()">+ Manuell</button>
+                </div>
+
+                <div id="cart-area" class="cart-container">
+                    <div class="cart-header">
+                        <span>Produkt</span>
+                        <span>Preis (€)</span>
+                        <span style="text-align:right;">Resale & Aktionen</span>
+                    </div>
+                    <div id="cart-list">
+                        </div>
+                    <div class="cart-summary" style="display:none;">
+                        <div>
+                            <div class="summary-label">Gesamtsumme</div>
+                            <div class="summary-val" id="total-price-display">0,00 €</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="summary-label">Effektive Kosten</div>
+                            <div class="summary-val" style="color:var(--success)" id="total-effective-display">0,00 €</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="time-result-container" class="result-container" style="display:none; border-top:none; padding-top:0;">
+                    <div class="product-calc-details">
+                        <div class="hero-grid">
+                            <div class="hero-box">
+                                <span class="hero-label">Stunden</span>
+                                <span class="hero-val" id="val-hours">0</span>
+                            </div>
+                            <div class="hero-box">
+                                <span class="hero-label">Arbeitstage</span>
+                                <span class="hero-val" id="val-days">0</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-footer">
+                            <div class="detail-item">
+                                <span>Anschaffungspreis:</span>
+                                <span class="val-highlight" id="detail-price">0,00 €</span>
+                            </div>
+                            <div class="detail-item" style="background-color: #f0fdf4;">
+                                <span>Effektive Kosten (nach Verkauf):</span>
+                                <span class="val-highlight" style="color: var(--success);" id="detail-effective-footer">0,00 €</span>
+                            </div>
+                        </div>
+
+                        <div class="decision-area">
+                            <p style="text-align:center; font-size:0.9rem; color:#64748b; margin-bottom:10px;">Deine Entscheidung?</p>
+                            <div class="decision-buttons">
+                                <button class="btn-decision btn-save" onclick="decisionSave()">
+                                    <span class="d-icon">🚫</span>
+                                    <span>Nicht kaufen<br><small>Sparen & Zeit gewinnen</small></span>
+                                </button>
+                                <button class="btn-decision btn-buy" onclick="decisionBuy()">
+                                    <span class="d-icon">🛒</span>
+                                    <span>Kaufen<br><small>Zum Shop</small></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> </div>
+    </div>
+
+    <div class="sidebar-wrapper" id="sidebar-benchmark">
+        <div class="benchmark-header">
+            <h2>🏆 Zeit-Benchmark</h2>
+            <p class="desc" style="margin-bottom:0; font-size:0.85rem;">
+                Wie lange muss ein <strong>Durchschnittsdeutscher</strong> dafür arbeiten?<br>
+                <span style="font-size:0.75rem; color:#94a3b8;">(Basis: Ø-Netto 2.100€)</span>
+            </p>
+        </div>
+        <div class="scroll-container">
+            <div class="scroll-track">
+                <div class="benchmark-item"><div class="b-icon">☕</div><div class="b-info"><span class="b-name">Kaffee</span><span class="b-price">3,50 €</span></div><div class="b-time">10 Min</div></div>
+                <div class="benchmark-item"><div class="b-icon">🍕</div><div class="b-info"><span class="b-name">Pizza</span><span class="b-price">12,00 €</span></div><div class="b-time">35 Min</div></div>
+                <div class="benchmark-item"><div class="b-icon">👟</div><div class="b-info"><span class="b-name">Sneaker</span><span class="b-price">120,00 €</span></div><div class="b-time">6 Std</div></div>
+                <div class="benchmark-item"><div class="b-icon">📱</div><div class="b-info"><span class="b-name">iPhone</span><span class="b-price">999,00 €</span></div><div class="b-time">50 Std</div></div>
+                <div class="benchmark-item"><div class="b-icon">🚗</div><div class="b-info"><span class="b-name">Kleinwagen</span><span class="b-price">15.000 €</span></div><div class="b-time">750 Std</div></div>
+                <div class="benchmark-item"><div class="b-icon">✈️</div><div class="b-info"><span class="b-name">Urlaub</span><span class="b-price">2.500 €</span></div><div class="b-time">125 Std</div></div>
+            </div>
+        </div>
+        <div class="ad-sidebar" style="background:#e5e7eb; display:flex; justify-content:center; align-items:center;">
+            <span style="font-size:0.7rem; color:#9ca3af; letter-spacing:1px; text-transform:uppercase;">Anzeige</span>
+        </div>
+    </div>
+
+</div>

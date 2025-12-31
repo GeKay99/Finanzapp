@@ -1,0 +1,47 @@
+<div class="lists-container">
+    <div class="lists-sidebar">
+        <button class="btn-new-list" onclick="createNewList()">+ Neue Liste</button>
+        <div id="lists-nav" class="lists-nav"></div>
+    </div>
+    <div class="lists-content" id="lists-content-area">
+        <div id="no-list-selected" style="text-align:center; color:#64748b; margin-top:50px;">
+            <div style="font-size:3rem; opacity:0.3; margin-bottom:10px;">📋</div>
+            Wähle eine Liste aus oder erstelle eine neue.
+        </div>
+        <div id="active-list-view" style="display:none;">
+            <div class="list-header-flex">
+                <h2 id="current-list-title" style="margin:0;">Mein Urlaub</h2>
+                <button class="btn-delete-list" onclick="deleteCurrentList()">Liste löschen</button>
+            </div>
+            <div class="search-container" style="margin-bottom:20px;">
+                <div class="search-input-wrapper" onclick="openCatalogModal('list')" style="cursor: pointer;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Klicke hier um Produkte zu suchen..." readonly style="cursor: pointer;">
+                </div>
+                <button class="btn-add-manual" onclick="addListManualItem()">+ Manuell</button>
+            </div>
+            <div class="list-items-wrapper">
+                <div id="list-items-container"></div>
+            </div>
+            <div class="list-results-card">
+                <div class="lr-row"><span>Gesamtsumme:</span><strong id="list-total">0,00 €</strong></div>
+                <div class="lr-input-row"><span>Bereits angespart:</span><input type="text" inputmode="decimal" id="list-saved" value="0" oninput="formatCurrencyInput(this); updateListCalculations()"></div>
+                <div class="lr-divider"></div>
+                <div class="mini-salary-config">
+                    <div style="font-size:0.8rem; font-weight:700; color:var(--text-light); margin-bottom:8px; text-transform:uppercase;">Dein Lohn (für Berechnung)</div>
+                    <div style="display:flex; gap:10px;">
+                        <div class="input-with-label" style="flex:1;"><span class="input-label-tiny">Netto</span><input type="text" inputmode="decimal" id="list-income-input" class="cart-input" placeholder="Netto" oninput="formatCurrencyInput(this); syncSalaryFromList()"></div>
+                        <div class="input-with-label" style="flex:1;"><span class="input-label-tiny">Fixkosten</span><input type="text" inputmode="decimal" id="list-expenses-input" class="cart-input" placeholder="Fixkosten" oninput="syncSalaryFromList()" ></div>
+                    </div>
+                </div>
+                <div class="lr-divider"></div>
+                <div class="lr-row highlight"><span>Noch zu erarbeiten:</span><strong id="list-remaining" style="color:var(--danger)">0,00 €</strong></div>
+                <div class="lr-time-box">
+                    <div class="lr-time-label">Dafür musst du noch arbeiten:</div>
+                    <div class="lr-time-val" id="list-work-time">0 Std</div>
+                    <div class="lr-time-sub" id="list-wage-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
