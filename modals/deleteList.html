@@ -1,0 +1,15 @@
+<div id="delete-list-modal" class="modal-overlay">
+    <div class="modal-window" style="height: auto; max-width: 400px; text-align: center;">
+        <div class="modal-body" style="padding: 30px; flex-direction: column; align-items: center;">
+            <div style="font-size: 3rem; margin-bottom: 15px;">🗑️</div>
+            <h3 style="margin-top: 0; color: var(--text-main);">Liste löschen?</h3>
+            <p style="color: var(--text-light); margin-bottom: 25px;">
+                Möchtest du diese Liste wirklich unwiderruflich löschen?
+            </p>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button class="btn-add-manual" style="flex: 1;" onclick="closeDeleteListModal()">Abbrechen</button>
+                <button class="btn-add-selected" style="background: var(--danger); flex: 1;" onclick="confirmDeleteList()">Löschen</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -14,8 +14,17 @@
 <body>
     <header>
         <div class="logo" onclick="window.location.href='index.html'">
-            <span class="logo-icon">⏳</span> Nettozeit
+            <img src="assets/logo-small.png" alt="Nettozeit Logo" class="logo-img">
+            <span class="logo-text">Nettozeit</span>
         </div>
+
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+
+        <nav id="main-nav">
+            <a href="index.html#home" class="nav-btn">Zeit-Rechner</a>
+            <a href="index.html#lists" class="nav-btn">Spar-Ziele</a>
+            <a href="index.html#salary" class="nav-btn">Brutto-Netto</a> 
+        </nav>
     </header>
 
     <div class="legal-content">
@@ -47,5 +56,11 @@
             </div>
         </div>
     </footer>
+    <script>
+        function toggleMobileMenu() {
+            const nav = document.getElementById('main-nav');
+            if (nav) nav.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

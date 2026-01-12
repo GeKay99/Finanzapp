@@ -1,0 +1,19 @@
+<div id="success-modal" class="modal-overlay">
+    <div class="modal-window" style="height: auto; max-width: 450px; text-align: center;">
+        <div class="modal-body" style="padding: 30px; flex-direction: column; align-items: center; background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);">
+            <div style="font-size: 4rem; margin-bottom: 10px;">🎉</div>
+            <h3 style="margin: 0; color: var(--success); font-size: 1.8rem;">Glückwunsch!</h3>
+            <p style="color: var(--text-main); font-size: 1.1rem; margin: 10px 0;">
+                Du hast gerade <strong id="success-saved-current" style="color: var(--success);">0 €</strong> gespart!
+            </p>
+            
+            <div style="background: white; border: 2px solid #bbf7d0; border-radius: 12px; padding: 15px; width: 100%; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-light); font-weight: 700; margin-bottom: 5px;">Dein Neuer Highscore</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);" id="success-total-money">0 €</div>
+                <div style="font-size: 1rem; color: var(--primary); font-weight: 600;" id="success-total-time">0 Std Lebenszeit</div>
+            </div>
+
+            <button class="btn-add-selected" style="width: 100%; padding: 15px; font-size: 1.1rem;" onclick="closeSuccessModal()">Weiter so!</button>
+        </div>
+    </div>
+</div>

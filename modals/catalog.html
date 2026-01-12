@@ -1,0 +1,31 @@
+<div id="catalog-modal" class="modal-overlay">
+    <div class="modal-window">
+        <div class="modal-header">
+            <h3>🛍️ Produkt-Katalog</h3>
+            <button class="modal-close" onclick="closeCatalogModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-sidebar">
+                <div class="cat-item active" onclick="filterCatalog('all', this)">Alle</div>
+                <div class="cat-item" onclick="filterCatalog('Handy', this)">📱 Handys</div>
+                <div class="cat-item" onclick="filterCatalog('Gaming', this)">🎮 Gaming</div>
+                <div class="cat-item" onclick="filterCatalog('Audio', this)">🎧 Audio</div>
+                <div class="cat-item" onclick="filterCatalog('Laptop', this)">💻 Laptops</div>
+                <div class="cat-item" onclick="filterCatalog('Tablet', this)">📟 Tablets</div>
+                <div class="cat-item" onclick="filterCatalog('Kamera', this)">📷 Kameras</div>
+                <div class="cat-item" onclick="filterCatalog('Haushalt', this)">🏠 Haushalt</div>
+            </div>
+            <div class="modal-content">
+                <div class="modal-search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="catalog-search-input" placeholder="Im Katalog suchen..." oninput="searchCatalog()">
+                </div>
+                <div id="catalog-grid" class="catalog-grid"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span id="selected-count">0 Produkte gewählt</span>
+            <button class="btn-add-selected" onclick="addSelectedToCart()">Auswahl hinzufügen</button>
+        </div>
+    </div>
+</div>

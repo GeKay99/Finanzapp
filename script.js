@@ -37,6 +37,32 @@ function parseGermanNum(str) {
 }
 
 // ==========================================
+// 1.5 HELPER: MODALS
+// ==========================================
+async function loadModal(modalId, filePath) {
+    const modalContainer = document.getElementById('modal-container');
+    if (!modalContainer) {
+        console.error('Modal container not found!');
+        return null;
+    }
+    let modal = document.getElementById(modalId);
+    if (!modal) {
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) throw new Error(`Failed to load modal: ${filePath}`);
+            const html = await response.text();
+            modalContainer.insertAdjacentHTML('beforeend', html);
+            modal = document.getElementById(modalId);
+        } catch (error) {
+            console.error('Error loading modal:', error);
+            alert('Fehler beim Laden eines Fensters. Bitte versuche es erneut.');
+            return null;
+        }
+    }
+    return modal;
+}
+
+// ==========================================
 // 2. STATE & CONFIG
 // ==========================================
 
@@ -66,8 +92,20 @@ const TAX_DATA = {
 // ==========================================
 
 window.onload = function() {
-    // Load the default view
-    switchView('home', document.querySelector('.nav-btn.active'));
+    // Handle view switching from URL hash
+    const hash = window.location.hash.substring(1);
+    const validViews = ['home', 'lists', 'salary'];
+    let viewToLoad = 'home';
+    let buttonSelector = '.nav-btn:nth-child(1)'; // Default to first button
+
+    if (validViews.includes(hash)) {
+        viewToLoad = hash;
+        if (hash === 'lists') buttonSelector = '.nav-btn:nth-child(2)';
+        if (hash === 'salary') buttonSelector = '.nav-btn:nth-child(3)';
+    }
+
+    // Load the view
+    switchView(viewToLoad, document.querySelector(`#main-nav ${buttonSelector}`));
     
     if (typeof productDB === 'undefined') {
         console.error("Fehler: products.js wurde nicht geladen!");
@@ -122,9 +160,12 @@ async function switchView(viewName, btn) {
 }
 
 // --- CATALOG MODAL ---
-function openCatalogModal(source) {
+async function openCatalogModal(source) {
+    const modal = await loadModal('catalog-modal', 'modals/catalog.html');
+    if (!modal) return;
+
     catalogSource = source; 
-    document.getElementById('catalog-modal').style.display = 'flex';
+    modal.style.display = 'flex';
     selectedCatalogItems = [];
     currentCategory = 'all';
     document.getElementById('catalog-search-input').value = '';
@@ -349,36 +390,44 @@ function checkFixCosts() {
 }
 
 // --- MODALS (Decision, Lists etc.) ---
-function decisionSave() {
+async function decisionSave() {
     if(currentCalcResult.money <= 0) { alert("Warenkorb ist leer."); return; }
-    document.getElementById('confirm-modal').style.display = 'flex';
+    const modal = await loadModal('confirm-modal', 'modals/confirm.html');
+    if (!modal) return;
+    modal.style.display = 'flex';
 }
 function closeConfirmModal() { document.getElementById('confirm-modal').style.display = 'none'; }
-function confirmAction() {
+async function confirmAction() {
     closeConfirmModal();
     totalStats.money += currentCalcResult.money;
     totalStats.time += currentCalcResult.hours;
     saveStats();
-    showSuccessModal();
+    await showSuccessModal();
     if(typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#22c55e', '#2563eb', '#facc15'] });
     document.getElementById('cart-list').innerHTML = '';
     checkEmptyCartState(); 
     currentCalcResult = { money: 0, hours: 0 };
 }
-function showSuccessModal() {
+async function showSuccessModal() {
+    const modal = await loadModal('success-modal', 'modals/success.html');
+    if (!modal) return;
+
     document.getElementById('success-saved-current').innerText = currentCalcResult.money.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €'; 
     document.getElementById('success-total-money').innerText = totalStats.money.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €';
     document.getElementById('success-total-time').innerText = Math.round(totalStats.time) + ' Std Lebenszeit';
-    document.getElementById('success-modal').style.display = 'flex';
+    modal.style.display = 'flex';
 }
 function closeSuccessModal() { document.getElementById('success-modal').style.display = 'none'; }
-function decisionBuy() {
+async function decisionBuy() {
     if(document.getElementById('cart-list').children.length === 0) { alert("Warenkorb leer."); return; }
     const list = document.getElementById('cart-list');
     if(list.querySelector('.empty-state')) { alert("Warenkorb leer."); return; }
-    openShopModal();
+    await openShopModal();
 }
-function openShopModal() {
+async function openShopModal() {
+    const modal = await loadModal('shop-modal', 'modals/shop.html');
+    if (!modal) return;
+
     const container = document.getElementById('shop-list-container');
     container.innerHTML = '';
     const cartRows = document.querySelectorAll('.cart-row');
@@ -393,14 +442,16 @@ function openShopModal() {
         div.innerHTML = `<div><strong>${name}</strong><br><small>${price} €</small></div><a href="${link}" target="_blank" class="shop-btn-external">${linkText}</a>`;
         container.appendChild(div);
     });
-    document.getElementById('shop-modal').style.display = 'flex';
+    modal.style.display = 'flex';
 }
 function closeShopModal() { document.getElementById('shop-modal').style.display = 'none'; }
 
 // --- LISTS ---
-function createNewList() {
+async function createNewList() {
+    const modal = await loadModal('new-list-modal', 'modals/newList.html');
+    if (!modal) return;
+    modal.style.display = 'flex';
     document.getElementById('new-list-name').value = '';
-    document.getElementById('new-list-modal').style.display = 'flex';
     setTimeout(() => document.getElementById('new-list-name').focus(), 100);
 }
 function closeNewListModal() { document.getElementById('new-list-modal').style.display = 'none'; }
@@ -450,7 +501,11 @@ function openList(id) {
     renderListItems();
     updateListCalculations();
 }
-function deleteCurrentList() { document.getElementById('delete-list-modal').style.display = 'flex'; }
+async function deleteCurrentList() {
+    const modal = await loadModal('delete-list-modal', 'modals/deleteList.html');
+    if (!modal) return;
+    modal.style.display = 'flex';
+}
 function closeDeleteListModal() { document.getElementById('delete-list-modal').style.display = 'none'; }
 function confirmDeleteList() {
     myLists = myLists.filter(l => l.id !== currentListId);

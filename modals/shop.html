@@ -1,0 +1,15 @@
+<div id="shop-modal" class="modal-overlay">
+    <div class="modal-window" style="height: auto; max-height: 80vh;">
+        <div class="modal-header">
+            <h3>🛍️ Deine Einkaufsliste</h3>
+            <button class="modal-close" onclick="closeShopModal()">×</button>
+        </div>
+        <div class="modal-body" style="padding: 20px; overflow-y: auto; flex-direction: column;">
+            <p style="margin-top:0; color:#64748b; margin-bottom: 20px;">Hier sind die Links zu deinen ausgewählten Produkten:</p>
+            <div id="shop-list-container" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+            <button class="btn-add-selected" onclick="closeShopModal()">Schließen</button>
+        </div>
+    </div>
+</div>

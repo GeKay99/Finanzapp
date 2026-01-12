@@ -1,0 +1,16 @@
+<div id="new-list-modal" class="modal-overlay">
+    <div class="modal-window" style="height: auto; max-width: 400px;">
+        <div class="modal-header">
+            <h3>📝 Neue Liste erstellen</h3>
+            <button class="modal-close" onclick="closeNewListModal()">×</button>
+        </div>
+        <div class="modal-body" style="padding: 20px; overflow: visible;">
+            <p style="margin-top:0; color:var(--text-light); margin-bottom:15px;">Wie soll dein Sparziel heißen?</p>
+            <input type="text" id="new-list-name" class="cart-input" placeholder="z.B. Urlaub 2025" style="width:100%; padding:12px; font-size:1rem;">
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
+            <button class="btn-add-manual" onclick="closeNewListModal()">Abbrechen</button>
+            <button class="btn-add-selected" onclick="saveNewListFromModal()">Erstellen</button>
+        </div>
+    </div>
+</div>

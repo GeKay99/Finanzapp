@@ -71,11 +71,14 @@
 
     <header>
         <div class="logo" onclick="window.location.href='index.html'" title="Zur Startseite" style="cursor: pointer;">
-            <span class="logo-icon">⏳</span>
-            Nettozeit
+            <img src="assets/logo-small.png" alt="Nettozeit Logo" class="logo-img">
+            <span class="logo-text">Nettozeit</span>
         </div>
-        <nav>
-            <a href="index.html" class="nav-btn active">Zurück zum Rechner</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        <nav id="main-nav">
+            <a href="index.html#home" class="nav-btn">Zeit-Rechner</a>
+            <a href="index.html#lists" class="nav-btn">Spar-Ziele</a>
+            <a href="index.html#salary" class="nav-btn">Brutto-Netto</a>
         </nav>
     </header>
 
@@ -118,14 +121,6 @@
             <h3>Chart.js (über jsDelivr CDN)</h3>
             <p>Zur Darstellung der Diagramme nutzen wir die Bibliothek Chart.js, die über das Content Delivery Network (CDN) jsDelivr geladen wird. Zur Bereitstellung dieser Inhalte baut Ihr Browser eine Verbindung zu den Servern von jsDelivr auf. Dabei wird Ihre IP-Adresse an jsDelivr übermittelt.</p>
 
-            <h2>5. Werbung & Tracking</h2>
-            
-            <h3>Google AdSense</h3>
-            <p>Diese Website benutzt Google AdSense, einen Dienst zum Einbinden von Werbeanzeigen der Google Ireland Limited („Google“), Gordon House, Barrow Street, Dublin 4, Irland.</p>
-            <p>Google AdSense verwendet sog. „Cookies“, Textdateien, die auf Ihrem Computer gespeichert werden und die eine Analyse der Benutzung der Website ermöglichen. Google AdSense verwendet auch so genannte Web Beacons (unsichtbare Grafiken). Durch diese Web Beacons können Informationen wie der Besucherverkehr auf diesen Seiten ausgewertet werden.</p>
-            <p>Die durch Cookies und Web Beacons erzeugten Informationen über die Benutzung dieser Website (einschließlich Ihrer IP-Adresse) und Auslieferung von Werbeformaten werden an einen Server von Google in den USA übertragen und dort gespeichert. Diese Informationen können von Google an Vertragspartner von Google weitergegeben werden. Google wird Ihre IP-Adresse jedoch nicht mit anderen von Ihnen gespeicherten Daten zusammenführen.</p>
-            <p><strong>Widerruf Ihrer Einwilligung:</strong> Sie können Ihre Einwilligung zur Speicherung von Cookies jederzeit über unseren Cookie-Consent-Manager (der Banner am unteren Rand der Seite) anpassen oder widerrufen.</p>
-
             <h2>6. Ihre Rechte</h2>
             <p>Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung sowie ein Recht auf Berichtigung oder Löschung dieser Daten. Hierzu sowie zu weiteren Fragen zum Thema personenbezogene Daten können Sie sich jederzeit an uns wenden.</p>
 
@@ -144,5 +139,11 @@
         </div>
     </footer>
 
+    <script>
+        function toggleMobileMenu() {
+            const nav = document.getElementById('main-nav');
+            if (nav) nav.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

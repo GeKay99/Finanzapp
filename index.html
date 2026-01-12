@@ -16,8 +16,8 @@
 
     <header>
         <div class="logo" onclick="switchView('home', document.querySelector('.nav-btn'))" title="Zur Startseite">
-            <span class="logo-icon">⏳</span>
-            Nettozeit
+            <img src="assets/logo-small.png" alt="Nettozeit Logo" class="logo-img">
+            <span class="logo-text">Nettozeit</span>
         </div>
         
         <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
@@ -29,135 +29,14 @@
         </nav>
     </header>
 
-    <div class="ad-container ad-banner"></div>
-
     <div class="main-container">
         <div id="view-container"></div>
+        <div id="modal-container"></div>
     </div>
-
-    <div id="catalog-modal" class="modal-overlay">
-        <div class="modal-window">
-            <div class="modal-header">
-                <h3>🛍️ Produkt-Katalog</h3>
-                <button class="modal-close" onclick="closeCatalogModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-sidebar">
-                    <div class="cat-item active" onclick="filterCatalog('all', this)">Alle</div>
-                    <div class="cat-item" onclick="filterCatalog('Handy', this)">📱 Handys</div>
-                    <div class="cat-item" onclick="filterCatalog('Gaming', this)">🎮 Gaming</div>
-                    <div class="cat-item" onclick="filterCatalog('Audio', this)">🎧 Audio</div>
-                    <div class="cat-item" onclick="filterCatalog('Laptop', this)">💻 Laptops</div>
-                    <div class="cat-item" onclick="filterCatalog('Tablet', this)">📟 Tablets</div>
-                    <div class="cat-item" onclick="filterCatalog('Kamera', this)">📷 Kameras</div>
-                    <div class="cat-item" onclick="filterCatalog('Haushalt', this)">🏠 Haushalt</div>
-                </div>
-                <div class="modal-content">
-                    <div class="modal-search-bar">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="catalog-search-input" placeholder="Im Katalog suchen..." oninput="searchCatalog()">
-                    </div>
-                    <div id="catalog-grid" class="catalog-grid"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <span id="selected-count">0 Produkte gewählt</span>
-                <button class="btn-add-selected" onclick="addSelectedToCart()">Auswahl hinzufügen</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="shop-modal" class="modal-overlay">
-        <div class="modal-window" style="height: auto; max-height: 80vh;">
-            <div class="modal-header">
-                <h3>🛍️ Deine Einkaufsliste</h3>
-                <button class="modal-close" onclick="closeShopModal()">×</button>
-            </div>
-            <div class="modal-body" style="padding: 20px; overflow-y: auto; flex-direction: column;">
-                <p style="margin-top:0; color:#64748b; margin-bottom: 20px;">Hier sind die Links zu deinen ausgewählten Produkten:</p>
-                <div id="shop-list-container" style="display:flex; flex-direction:column; gap:10px;"></div>
-            </div>
-            <div class="modal-footer" style="justify-content: flex-end;">
-                <button class="btn-add-selected" onclick="closeShopModal()">Schließen</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="confirm-modal" class="modal-overlay">
-        <div class="modal-window" style="height: auto; max-width: 400px; text-align: center;">
-            <div class="modal-body" style="padding: 30px; flex-direction: column; align-items: center;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🐷</div>
-                <h3 style="margin-top: 0; color: var(--text-main);">Wirklich sparen?</h3>
-                <p style="color: var(--text-light); margin-bottom: 25px;">
-                    Möchtest du den Kauf wirklich abbrechen? <br>
-                    Der Betrag wird deinem <strong>Highscore</strong> gutgeschrieben.
-                </p>
-                <div style="display: flex; gap: 10px; width: 100%;">
-                    <button class="btn-add-selected" style="background: var(--line-color); color: var(--text-main); flex: 1;" onclick="closeConfirmModal()">Abbrechen</button>
-                    <button class="btn-add-selected" style="flex: 1;" onclick="confirmAction()">Ja, sparen!</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="success-modal" class="modal-overlay">
-        <div class="modal-window" style="height: auto; max-width: 450px; text-align: center;">
-            <div class="modal-body" style="padding: 30px; flex-direction: column; align-items: center; background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);">
-                <div style="font-size: 4rem; margin-bottom: 10px;">🎉</div>
-                <h3 style="margin: 0; color: var(--success); font-size: 1.8rem;">Glückwunsch!</h3>
-                <p style="color: var(--text-main); font-size: 1.1rem; margin: 10px 0;">
-                    Du hast gerade <strong id="success-saved-current" style="color: var(--success);">0 €</strong> gespart!
-                </p>
-                
-                <div style="background: white; border: 2px solid #bbf7d0; border-radius: 12px; padding: 15px; width: 100%; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-light); font-weight: 700; margin-bottom: 5px;">Dein Neuer Highscore</div>
-                    <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);" id="success-total-money">0 €</div>
-                    <div style="font-size: 1rem; color: var(--primary); font-weight: 600;" id="success-total-time">0 Std Lebenszeit</div>
-                </div>
-
-                <button class="btn-add-selected" style="width: 100%; padding: 15px; font-size: 1.1rem;" onclick="closeSuccessModal()">Weiter so!</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="new-list-modal" class="modal-overlay">
-        <div class="modal-window" style="height: auto; max-width: 400px;">
-            <div class="modal-header">
-                <h3>📝 Neue Liste erstellen</h3>
-                <button class="modal-close" onclick="closeNewListModal()">×</button>
-            </div>
-            <div class="modal-body" style="padding: 20px; overflow: visible;">
-                <p style="margin-top:0; color:var(--text-light); margin-bottom:15px;">Wie soll dein Sparziel heißen?</p>
-                <input type="text" id="new-list-name" class="cart-input" placeholder="z.B. Urlaub 2025" style="width:100%; padding:12px; font-size:1rem;">
-            </div>
-            <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
-                <button class="btn-add-manual" onclick="closeNewListModal()">Abbrechen</button>
-                <button class="btn-add-selected" onclick="saveNewListFromModal()">Erstellen</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="delete-list-modal" class="modal-overlay">
-        <div class="modal-window" style="height: auto; max-width: 400px; text-align: center;">
-            <div class="modal-body" style="padding: 30px; flex-direction: column; align-items: center;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🗑️</div>
-                <h3 style="margin-top: 0; color: var(--text-main);">Liste löschen?</h3>
-                <p style="color: var(--text-light); margin-bottom: 25px;">
-                    Möchtest du diese Liste wirklich unwiderruflich löschen?
-                </p>
-                <div style="display: flex; gap: 10px; width: 100%;">
-                    <button class="btn-add-manual" style="flex: 1;" onclick="closeDeleteListModal()">Abbrechen</button>
-                    <button class="btn-add-selected" style="background: var(--danger); flex: 1;" onclick="confirmDeleteList()">Löschen</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="ad-container ad-banner"></div>
 
     <footer>
         <div class="footer-content">
-            <div class="logo" style="color:white; font-size:1.2rem;">⏳ Nettozeit</div>
+            <div class="logo" style="color:white; font-size:1.2rem;"> Nettozeit</div>
             <p class="copyright">&copy; 2024 Nettozeit. Dein Tool für finanzielle Klarheit.</p>
             <div class="footer-links">
                 <a href="impressum.html">Impressum</a>
