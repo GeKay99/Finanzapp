@@ -141,15 +141,18 @@ async function switchView(viewName, btn) {
         // After loading, run view-specific initializations
         const savedIncome = localStorage.getItem('income');
         const savedExpenses = localStorage.getItem('expenses');
+        const savedHours = localStorage.getItem('hours');
 
         if (viewName === 'home') {
             if(savedIncome) { document.getElementById('w-income').value = savedIncome; formatCurrencyInput(document.getElementById('w-income')); }
             if(savedExpenses) { document.getElementById('w-expenses').value = savedExpenses; formatCurrencyInput(document.getElementById('w-expenses')); }
+            if(savedHours) { document.getElementById('w-hours').value = savedHours; }
             checkEmptyCartState();
             calcWorker();
         } else if (viewName === 'lists') {
             if(savedIncome) { document.getElementById('list-income-input').value = savedIncome; formatCurrencyInput(document.getElementById('list-income-input')); }
             if(savedExpenses) { document.getElementById('list-expenses-input').value = savedExpenses; formatCurrencyInput(document.getElementById('list-expenses-input')); }
+            if(savedHours) { document.getElementById('list-hours-input').value = savedHours; }
             renderListsNav();
             if (currentListId) openList(currentListId);
         }
@@ -308,10 +311,13 @@ function removeCartRow(id) {
 function saveToLocal() {
     const inc = document.getElementById('w-income').value;
     const exp = document.getElementById('w-expenses').value;
+    const hours = document.getElementById('w-hours').value;
     localStorage.setItem('income', inc);
     localStorage.setItem('expenses', exp);
+    localStorage.setItem('hours', hours);
     if(document.getElementById('list-income-input')) document.getElementById('list-income-input').value = inc;
     if(document.getElementById('list-expenses-input')) document.getElementById('list-expenses-input').value = exp;
+    if(document.getElementById('list-hours-input')) document.getElementById('list-hours-input').value = hours;
 }
 
 function calcWorker() {
@@ -319,6 +325,9 @@ function calcWorker() {
     const income = parseGermanNum(document.getElementById('w-income').value);
     const expenses = parseGermanNum(document.getElementById('w-expenses').value);
     const wageDisplay = document.getElementById('wage-display-area');
+
+    let hours = parseFloat(document.getElementById('w-hours').value);
+    if(!hours || hours <= 0) hours = 173.33;
     
     if(income <= 0) {
         wageDisplay.style.display = 'none';
@@ -338,9 +347,9 @@ function calcWorker() {
     
     const safeExpenses = expenses || 0;
     const disposable = Math.max(0, income - safeExpenses);
-    const hourly = disposable / 173.33;
+    const hourly = disposable / hours;
     
-    document.getElementById('val-wage-base').innerText = (income/173.33).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    document.getElementById('val-wage-base').innerText = (income/hours).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     document.getElementById('val-wage-real').innerText = hourly.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     
     const list = document.getElementById('cart-list');
@@ -360,18 +369,18 @@ function calcWorker() {
     document.getElementById('detail-price').innerText = totalPrice.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
     document.getElementById('detail-effective-footer').innerText = effective.toLocaleString('de-DE',{minimumFractionDigits:2}) + ' €';
 
-    let hours = 0;
+    let workHoursNeeded = 0;
     if(disposable <= 0) {
         document.getElementById('val-hours').innerText = "∞";
         document.getElementById('val-days').innerText = "∞";
     } else {
-        hours = effective / hourly;
-        document.getElementById('val-hours').innerText = Math.round(hours);
-        document.getElementById('val-days').innerText = (hours/8).toFixed(1);
+        workHoursNeeded = effective / hourly;
+        document.getElementById('val-hours').innerText = Math.round(workHoursNeeded);
+        document.getElementById('val-days').innerText = (workHoursNeeded/8).toFixed(1);
     }
 
     currentCalcResult.money = effective;
-    currentCalcResult.hours = (disposable > 0) ? hours : 0;
+    currentCalcResult.hours = (disposable > 0) ? workHoursNeeded : 0;
 }
 
 function checkFixCosts() {
@@ -563,10 +572,13 @@ function updateListItem(index, field, value) {
 function syncSalaryFromList() {
     const incInput = document.getElementById('list-income-input');
     const expInput = document.getElementById('list-expenses-input');
+    const hoursInput = document.getElementById('list-hours-input');
     localStorage.setItem('income', incInput.value);
     localStorage.setItem('expenses', expInput.value);
+    localStorage.setItem('hours', hoursInput.value);
     if(document.getElementById('w-income')) document.getElementById('w-income').value = incInput.value;
     if(document.getElementById('w-expenses')) document.getElementById('w-expenses').value = expInput.value;
+    if(document.getElementById('w-hours')) document.getElementById('w-hours').value = hoursInput.value;
     updateListCalculations();
 }
 function updateListCalculations() {
@@ -582,6 +594,10 @@ function updateListCalculations() {
     const incomeInput = document.getElementById('list-income-input');
     const income = parseGermanNum(incomeInput.value);
     const expenses = parseGermanNum(document.getElementById('list-expenses-input').value);
+    
+    let hours = parseFloat(document.getElementById('list-hours-input').value);
+    if(!hours || hours <= 0) hours = 173.33;
+
     const disposable = Math.max(0, income - expenses);
     const timeEl = document.getElementById('list-work-time');
     const infoEl = document.getElementById('list-wage-info');
@@ -604,7 +620,7 @@ function updateListCalculations() {
         return; 
     }
     if(disposable <= 0) { timeEl.innerText = "Unendlich"; infoEl.innerText = "Kein freies Einkommen."; return; }
-    const hourlyWage = disposable / 173.33;
+    const hourlyWage = disposable / hours;
     const hoursNeeded = remaining / hourlyWage;
     if (hoursNeeded > 8) { const days = (hoursNeeded / 8).toFixed(1); timeEl.innerText = `${days} Arbeitstage`; }
     else { const h = Math.floor(hoursNeeded); const m = Math.round((hoursNeeded - h) * 60); timeEl.innerText = `${h} Std ${m} Min`; }

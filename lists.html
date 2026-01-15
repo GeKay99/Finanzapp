@@ -31,6 +31,7 @@
                     <div style="font-size:0.8rem; font-weight:700; color:var(--text-light); margin-bottom:8px; text-transform:uppercase;">Dein Lohn (für Berechnung)</div>
                     <div style="display:flex; gap:10px;">
                         <div class="input-with-label" style="flex:1;"><span class="input-label-tiny">Netto</span><input type="text" inputmode="decimal" id="list-income-input" class="cart-input" placeholder="Netto" oninput="formatCurrencyInput(this); syncSalaryFromList()"></div>
+                        <div class="input-with-label" style="flex:1;"><span class="input-label-tiny">Stunden</span><input type="number" id="list-hours-input" class="cart-input" placeholder="Std" value="173.33" step="0.01" oninput="syncSalaryFromList()"></div>
                         <div class="input-with-label" style="flex:1;"><span class="input-label-tiny">Fixkosten</span><input type="text" inputmode="decimal" id="list-expenses-input" class="cart-input" placeholder="Fixkosten" oninput="syncSalaryFromList()" ></div>
                     </div>
                 </div>
